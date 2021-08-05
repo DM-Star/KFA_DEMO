@@ -1,0 +1,650 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Research
+{
+    public int id;
+    // 当前研发状态，小于maxstatus研发中，=maxstatus不在研发
+    public int status;
+    public int maxstatus;
+    // 完成研发的次数
+    public int level;
+    // 如果正在研发，标识出正在哪个建筑中研发
+    public int row, col;
+    public int food;
+    public int iron;
+    public Player player;
+    public Research(ResearchInfo info, Player p)
+    {
+        id = info.id;
+        maxstatus = info.time;
+        status = maxstatus;
+        level = 0;
+        row = col = -1;
+        food = info.food;
+        iron = info.iron;
+        player = p;
+    }
+    public void Move(GameInfo gameinfo)
+    {
+        if (status < maxstatus)
+        {
+            status++;
+            if (status == maxstatus)
+            {
+                player.FinishResearch(id);
+                gameinfo.infobar.statuses.Enqueue(new StatusMsg(6, new Position(player.isclient, row, col)));
+                if (player.isclient == gameinfo.client)
+                {
+                    gameinfo.canvas.ShowMsg(string.Format("{0} 研发完成。", gameinfo.researchmap[id].name));
+                }
+            }
+        }
+    }
+}
+public class Produce
+{
+    public int id;
+    public int status;
+    public int maxstatus;
+    public int food;
+    public int iron;
+    public Produce(SoldierInfo info, int needfood, int neediron)
+    {
+        id = info.id;
+        status = 0;
+        maxstatus = info.time;
+        food = needfood;
+        iron = neediron;
+    }
+    public bool Move()
+    {
+        // 招募完成后返回true，否则返回false
+        if (status < maxstatus)
+        {
+            status++;
+            if (status == maxstatus)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+public class Player
+{
+    public class BuildingStatus
+    {
+        public int buildingcount;   // 在建
+        public int count;           // 拥有
+        public BuildingStatus()
+        {
+            buildingcount = 1;
+            count = 0;
+        }
+    }
+    // 区分主客，0主机，1客户端（对应0左边，1右边）
+    public int isclient;
+    public int food;
+    public int iron;
+    public Building[,] buildings;
+    private Dictionary<int, BuildingStatus> buildingcount;  // < 建筑编号, 建筑状态 >
+    private Players players;
+    private Dictionary<int, List<Building>> bumap;          // < 建筑编号, 所有该建筑的坐标列表 >
+    public Dictionary<int, Buff> buildingbuff;  // 当前建筑的初始buff信息
+    public Dictionary<int, Buff> soldierbuff;   // 当前士兵的初始buff信息
+    public Dictionary<Transform, Unit> units;
+
+    public Dictionary<int, Research> researches;
+    public Player(GameInfo gameinfo, int client)
+    {
+        buildingcount = new Dictionary<int, BuildingStatus>();
+        researches = new Dictionary<int, Research>();
+        bumap = new Dictionary<int, List<Building>>();
+        buildingbuff = new Dictionary<int, Buff>();
+        soldierbuff = new Dictionary<int, Buff>();
+        units = new Dictionary<Transform, Unit>();
+
+        int gamemode = gameinfo.gamemode;
+        players = gameinfo.players;
+        switch (gamemode)
+        {
+            case 1:
+                isclient = client;
+                food = 200;
+                iron = 200;
+                int row = gameinfo.row;
+                int col = gameinfo.playercolumn;
+                buildings = new Building[row, col];
+                for (int r = 0; r < row; r++)
+                {
+                    for (int c = 0; c < col; c++)
+                    {
+                        buildings[r, c] = gameinfo.background.buildings[client, r, c];
+                        buildings[r, c].player = this;
+                    }
+                }
+
+                foreach(KeyValuePair<int, ResearchInfo> p in gameinfo.researchmap)
+                {
+                    researches.Add(p.Key, new Research(p.Value, this));
+                }
+                break;
+        }
+
+        foreach(KeyValuePair<int, BuildingInfo> pair in gameinfo.buildingmap)
+        {
+            buildingbuff.Add(pair.Key, new Buff(pair.Value.unitinfo));
+        }
+        foreach(KeyValuePair<int, SoldierInfo> pair in gameinfo.soldiermap)
+        {
+            soldierbuff.Add(pair.Key, new Buff(pair.Value.unitinfo));
+        }
+    }
+    public void StartBuild(int row, int col, BuildingInfo info)
+    {
+        Building building = buildings[row, col];
+        building.player = this;
+        building.Build(row, col, info);
+
+        food -= (int)(info.food * (1 + buildingbuff[info.id].food / 100f));
+        iron -= (int)(info.iron * (1 + buildingbuff[info.id].iron / 100f));
+
+        int id = info.id;
+        if (buildingcount.ContainsKey(id))
+        {
+            buildingcount[id].buildingcount++;
+            bumap[id].Add(building);
+        }
+        else
+        {
+            buildingcount.Add(id, new BuildingStatus());
+            bumap.Add(id, new List<Building>());
+            bumap[id].Add(building);
+        }
+        players.units[row].Add(building.unit);
+    }
+    public void FinishBuild(int id)
+    {
+        if (id != 0)
+        {
+            if (buildingcount.ContainsKey(id))
+            {
+                buildingcount[id].count++;
+                buildingcount[id].buildingcount--;
+            }
+            else
+            {
+                Debug.Log("有什么bug出现了(Players.cs  line 302)");
+            }
+        }
+
+    }
+    public void CancelBuild(int row, int col, BuildingInfo info)
+    {
+        Building building = buildings[row, col];
+        int id = building.id;
+
+        // 待测试：升级时被攻击
+        double health = (double)building.unit.hp / building.unit.maxhp;
+        int getfood = System.Convert.ToInt32(health * (info.food * (1 + buildingbuff[info.id].food / 100f)));
+        int getiron = System.Convert.ToInt32(health * (info.iron * (1 + buildingbuff[info.id].iron / 100f)));
+        food += getfood;
+        iron += getiron;
+        if(building.status == building.maxstatus)
+        {
+            buildingcount[id].count--;
+        }
+        else
+        {
+            buildingcount[id].buildingcount--;
+        }
+        for(int i = 0; i < bumap[id].Count; i++) { 
+            if(bumap[id][i].Equals(building))
+            {
+                bumap[id].RemoveAt(i);
+                break;
+            }
+        }
+        players.units[row].Remove(building.unit);
+        building.Destroy();
+    }
+    public void LossBuilding(Building building, GameInfo gameinfo)
+    {
+        int row = building.row;
+        int col = building.col;
+        int id = building.id;
+
+        // 待测试：升级时被攻击
+        if (building.status == building.maxstatus)
+        {
+            buildingcount[id].count--;
+        }
+        else
+        {
+            buildingcount[id].buildingcount--;
+        }
+        for (int i = 0; i < bumap[id].Count; i++)
+        {
+            if (bumap[id][i].Equals(building))
+            {
+                bumap[id].RemoveAt(i);
+                break;
+            }
+        }
+        players.units[row].Remove(building.unit);
+        building.Destroy();
+        gameinfo.infobar.statuses.Enqueue(new StatusMsg(4, new Position(isclient, row, col), id));
+    }
+    public void StartResearch(int row, int col, ResearchInfo info)
+    {
+        // 科技所属建筑应为当前格子建筑
+        // 当前建筑未在研发科技
+        // 当前科技未在研究
+        // 当前科技未达研发次数上限
+        int id = info.id;
+        researches[id].status = 0;
+        researches[id].row = row;
+        researches[id].col = col;
+        food -= info.food;
+        iron -= info.iron;
+        buildings[row, col].researching = id;
+    }
+    public void FinishResearch(int id)
+    {
+        buildings[researches[id].row, researches[id].col].researching = 0;
+        researches[id].level++;
+        ResearchInfo reinfo = players.gameinfo.researchmap[id];
+        List<int> targets;
+        for (int i = 0; i < reinfo.buffnum; i++)
+        {
+            ResearchInfo.BuffInfo buff = players.gameinfo.researchmap[id].buffinfos[i];
+            switch (buff.type)
+            {
+                case 1: // 建筑
+                    targets = buff.targets;
+                    if (targets[0] != -1)
+                    {
+                        foreach (int target in targets)
+                        {
+                            buildingbuff[target].AddBuff(buff);
+                        }
+                    }
+                    else if (targets[0] == -1)
+                    {
+                        foreach (KeyValuePair<int, Buff> pair in buildingbuff)
+                        {
+                            pair.Value.AddBuff(buff);
+                        }
+                    }
+                    break;
+                case 2: // 兵种
+                    targets = buff.targets;
+                    if (targets[0] != -1)
+                    {
+                        foreach (int target in targets)
+                        {
+                            soldierbuff[target].AddBuff(buff);
+                            for (int e = 0; e < buff.effects.Count; e++)
+                            {
+                                if (buff.effects[e] == 3)
+                                {
+                                    // 加血上限，即时生效
+                                    foreach (KeyValuePair<Transform, Unit> pair in units)
+                                    {
+                                        Unit unit = pair.Value;
+                                        if (unit.type == Unit.Type.SOLDIER && unit.id == target)
+                                        {
+                                            unit.maxhp += buff.values[e];
+                                            unit.hp += buff.values[e];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (targets[0] == -1)
+                    {
+                        foreach (KeyValuePair<int, Buff> pair in soldierbuff)
+                        {
+                            pair.Value.AddBuff(buff);
+                        }
+                        for (int e = 0; e < buff.effects.Count; e++)
+                        {
+                            if (buff.effects[e] == 3)
+                            {
+                                // 加血上限，即时生效
+                                foreach (KeyValuePair<Transform, Unit> pair in units)
+                                {
+                                    Unit unit = pair.Value;
+                                    unit.maxhp += buff.values[e];
+                                    unit.hp += buff.values[e];
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case 3: // 科技
+                    break;
+                case 4: // 英雄
+                    break;
+                case 5: // 攻击类型
+                    break;
+                case 6: // 门派
+                    targets = buff.targets;
+                    if (targets[0] != -1)
+                    {
+                        foreach (int target in targets)
+                        {
+                            foreach (KeyValuePair<int, Buff> pair in soldierbuff)
+                            {
+                                SoldierInfo soinfo = players.gameinfo.soldiermap[pair.Key];
+                                if (soinfo.job == target)
+                                {
+                                    pair.Value.AddBuff(buff);
+
+                                }
+                            }
+                            for (int e = 0; e < buff.effects.Count; e++)
+                            {
+                                if (buff.effects[e] == 3)
+                                {
+                                    // 加血上限，即时生效
+                                    foreach (KeyValuePair<Transform, Unit> pair in units)
+                                    {
+                                        Unit unit = pair.Value;
+                                        if (unit.type == Unit.Type.SOLDIER && unit.soldier.soinfo.job == target)
+                                        {
+                                            unit.maxhp += buff.values[e];
+                                            unit.hp += buff.values[e];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (targets[0] == -1)
+                    {
+                        foreach (KeyValuePair<int, Buff> pair in soldierbuff)
+                        {
+                            pair.Value.AddBuff(buff);
+                        }
+                        for (int e = 0; e < buff.effects.Count; e++)
+                        {
+                            if (buff.effects[e] == 3)
+                            {
+                                // 加血上限，即时生效
+                                foreach (KeyValuePair<Transform, Unit> pair in units)
+                                {
+                                    Unit unit = pair.Value;
+                                    unit.maxhp += buff.values[e];
+                                    unit.hp += buff.values[e];
+                                }
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+    public void CancelResearch(int id)
+    {
+        Research research = researches[id];
+        food += research.food;
+        iron += research.iron;
+        buildings[research.row, research.col].researching = 0;
+        research.status = research.maxstatus;
+    }
+    public int StartProduce(Building building, SoldierInfo info)
+    {
+        // 返回开始后的建造队列长度
+        int needfood = (int)(info.food * (1 + soldierbuff[info.id].food / 100f));
+        int neediron = (int)(info.iron * (1 + soldierbuff[info.id].iron / 100f));
+        food -= needfood;
+        iron -= neediron;
+        return building.AddProduce(info, needfood, neediron);
+    }
+    public void FinishProduce(Building building, int id)
+    {
+        players.CreateSoldier(building, id, isclient);
+    }
+    public int CancelProduce(Building building)
+    {
+        // 返回招募队列剩余士兵数
+        // food iron的恢复在building中执行
+        return building.CancelProduce();
+    }
+    public void Move(GameInfo gameinfo)
+    {
+        foreach (Building building in buildings)
+        {
+            if (building.id != 0)
+            {
+                building.Move(gameinfo);
+            }
+        }
+    }
+    public bool HasBuildings(List<int> prebuildings, out int lack)
+    {
+        lack = 0;
+        foreach (int id in prebuildings)
+        {
+            if (id != 0)
+            {
+                if (!buildingcount.ContainsKey(id) || buildingcount[id].count == 0)
+                {
+                    lack = id;
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    public bool HasBuilding(int prebuilding)
+    {
+        if (prebuilding != 0)
+        {
+            if (!buildingcount.ContainsKey(prebuilding) || buildingcount[prebuilding].count == 0)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    public bool HasBuildings_AI(List<int[]> prebuildings, out int lack)
+    {
+        // AI专用函数，判断是否拥有某座建筑或者在造某座建筑
+        lack = 0;
+        foreach (int[] tobuild in prebuildings)
+        {
+            int id = tobuild[0];
+            int need = tobuild[1];
+            if (id != 0)
+            {
+                if (!buildingcount.ContainsKey(id) || (buildingcount[id].count + buildingcount[id].buildingcount) < need)
+                {
+                    lack = id;
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    public List<Building> FindBuildings_AI(int id)
+    {
+        if (bumap.ContainsKey(id))
+        {
+            return bumap[id];
+        }
+        return null;
+    }
+    public bool HasResearches(List<int> preresearched, out int lack)
+    {
+        lack = 0;
+        foreach (int id in preresearched)
+        {
+            if (id != 0)
+            {
+                if (!researches.ContainsKey(id) || researches[id].level <= 0)
+                {
+                    lack = id;
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    public bool HasResearch(int preresearch)
+    {
+        if (preresearch != 0)
+        {
+            if (!researches.ContainsKey(preresearch) || researches[preresearch].level <= 0)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+public class Players : MonoBehaviour
+{
+    public int gamemode;
+    private Player[] players;
+    public List<List<Unit>> units;
+    public List<Projection> projections;
+    public GameInfo gameinfo;
+    // 士兵实例
+    public Soldier soldierins;
+
+    private void Awake()
+    {
+        projections = new List<Projection>();
+    }
+    // 0返回主机玩家，1返回客户端玩家
+    public Player GetPlayer(int client)
+    {
+        return players[client];
+    }
+    public void Init(GameInfo info)
+    {
+        gameinfo = info;
+        gamemode = gameinfo.gamemode;
+        // 多人游戏时可能更多
+        players = new Player[2];
+        for(int i = 0; i < 2; i++)
+        {
+            players[i] = new Player(gameinfo, i);
+        }
+        units = new List<List<Unit>>(5);
+        for(int i = 0; i < 5; i++)
+        {
+            units.Add(new List<Unit>());
+        }
+        
+    }
+    public void Move()
+    {
+        for (int cl = 0; cl < 2; cl++)
+        {
+            Player player = players[cl];
+            player.Move(gameinfo);
+        }
+        foreach (List<Unit> line in units)
+        {
+            foreach(Unit unit in line)
+            {
+                unit.Move();
+            }
+            line.Sort();
+
+            // 处理出界的单位
+            while(line.Count > 0 && line[0].transform.position.x < -90)
+            {
+                Destroy(line[0].transform.gameObject);
+                line.RemoveAt(0);
+            }
+            while (line.Count > 0 && line[line.Count - 1].transform.position.x > 90)
+            {
+                Destroy(line[line.Count - 1].transform.gameObject);
+                line.RemoveAt(line.Count - 1);
+            }
+        }
+        // 所有飞行物飞行
+        if (projections.Count > 0)
+        {
+            List<Projection> todestroy = new List<Projection>();
+            foreach (Projection projection in projections)
+            {
+                if (projection.crossnum > 0 && projection.distance > 0)
+                {
+                    projection.Move();
+                }
+                else
+                {
+                    todestroy.Add(projection);
+                }
+            }
+            foreach (Projection projection in todestroy)
+            {
+                projections.Remove(projection);
+                projection.DestroySelf();
+            }
+        }
+        // 死亡判断
+        foreach (List<Unit> line in units)
+        {
+            List<Building> todestroy = new List<Building>();
+            List<Soldier> tokill = new List<Soldier>();
+            foreach(Unit unit in line)
+            {
+                if(unit.hp <= 0)
+                {
+                    if(unit.type == Unit.Type.BUILDING)
+                    {
+                        todestroy.Add(unit.building);
+                    }
+                    else if(unit.type == Unit.Type.SOLDIER)
+                    {
+                        tokill.Add(unit.soldier);
+                    }
+                }
+            }
+            foreach (Building building in todestroy)
+            {
+                DesrtoyBuilding(building);
+            }
+            foreach (Soldier solider in tokill)
+            {
+                line.Remove(solider.unit);
+                Destroy(solider.gameObject);
+            }
+        }
+    }
+    public Building GetBuilding(Position pos)
+    {
+        if (pos.right != -1)
+        {
+            return players[pos.right].buildings[pos.row, pos.col];
+        }
+        else return null;
+    }
+    public void CreateSoldier(Building building, int id, int client)
+    {
+        SoldierInfo info = gameinfo.soldiermap[id];
+        // public static Object Instantiate(Object original, Vector3 position, Quaternion rotation, Transform parent);
+        int r = building.row;
+        int c = building.col;
+        Soldier s = Instantiate(soldierins, 
+            gameinfo.background.Pos2Pix(new Vector3(client, r, c)), 
+            new Quaternion(), transform);
+        s.Init(gameinfo, id, client, r);  // 之后要改，根据兵种id查询投射物。
+        units[r].Add(s.unit);
+    }
+    public void DesrtoyBuilding(Building building)
+    {
+        Player owner = building.player;
+        owner.LossBuilding(building, gameinfo);
+    }
+}
