@@ -188,8 +188,8 @@ public class Projectile
         {
             attack_type = Convert.ToInt32(info[10]);
             attack_mood = Convert.ToInt32(info[11]);
-            speed = Convert.ToInt32(info[12]);
-            distance = Convert.ToInt32(info[13]);
+            speed = (float)Convert.ToDouble(info[12]);
+            distance = (float)Convert.ToDouble(info[13]);
             lockobj = Convert.ToInt32(info[14]);
             value = Convert.ToInt32(info[15]);
             destroy = Convert.ToInt32(info[16]);

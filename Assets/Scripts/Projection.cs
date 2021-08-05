@@ -101,34 +101,14 @@ public class Projection : MonoBehaviour
         // 计算攻方buff
         damage.CalDamage(self.basebuff);
         damage.CalDamage(self.buff);
-        // 插入时机：造成伤害
+
+        // 插入时机：造成伤害前
         gameinfo.skills.TriggerSkills(self, EVENT.BEFORE_DAMAGE, damage);
 
-        // 计算受伤方buff
-        // 未考虑身上的buff，仅考虑全局buff
-        damage.CalDamaged(unit.basebuff);
-        damage.CalDamaged(unit.buff);
+        // 目标受到伤害
+        unit.TakeDamage(damage);
 
-        // 插入时机：受到伤害前
-        gameinfo.skills.TriggerSkills(unit, EVENT.BEFORE_DAMAGED, damage);
-
-        // 最后防止伤害溢出
-        if (damage.damage > unit.hp) damage.damage = unit.hp;
-
-        HpChange hpchange = new HpChange(unit.hp, unit.hp - damage.damage);
-        unit.hp -= damage.damage;
-
-        if (unit.type == Unit.Type.SOLDIER)
-        {
-            unit.soldier.SetHpBar();
-            unit.soldier.DamageTip(damage);
-        }
-
-        // 插入时机：受到伤害后
-        gameinfo.skills.TriggerSkills(unit, EVENT.AFTER_DAMAGED, damage);
-        // 插入时机：生命值改变后
-        gameinfo.skills.TriggerSkills(unit, EVENT.HPCHANGE, hpchange);
-        // 插入时机：造成伤害后
+        // 待插入时机：造成伤害后
 
         hasattack.Add(unit.transform, true);
     }

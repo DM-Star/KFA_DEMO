@@ -269,7 +269,7 @@ public class Sot : MonoBehaviour
                 recvStr = ai.Operator();
                 if(recvStr != "000")
                 {
-                    calmdown = 50;
+                    calmdown = 250;
                 }
             }
         }

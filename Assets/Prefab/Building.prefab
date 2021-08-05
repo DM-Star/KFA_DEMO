@@ -125,6 +125,7 @@ MonoBehaviour:
   id: 0
   row: 0
   col: 0
+  hpchangeins: {fileID: 4293433945592285777, guid: 5c0816def7e9c874291efcbdf7b08549, type: 3}
   status: 0
   maxstatus: 0
   researching: 0

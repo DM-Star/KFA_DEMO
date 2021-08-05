@@ -110,31 +110,55 @@ public class Buff
 
 public class Damage
 {
-    public int damage;
+    public int commondamage;
+    private int realdamage;
     public int attack_type; // 攻击类型：1肉搏 2兵刃 3气功
     public int attack_mode; // 攻击模式：4近战 5远程
     public Damage(int dmg, int att_type, int att_mode)
     {
-        damage = dmg;
+        commondamage = dmg;
+        realdamage = 0;
         attack_type = att_type;
         attack_mode = att_mode;
     }
+    // 增加真实伤害
+    public void AddRealDamage(int damage)
+    {
+        realdamage += damage;
+    }
+    // 返回伤害结构体的伤害值（伤害+真实伤害）
+    public int GetDamage()
+    {
+        return commondamage + realdamage;
+    }
+
     // 传入攻击方的buff，计算相关的增伤
     public void CalDamage(Buff buff)
     {
-        damage += buff.attack;
+        commondamage += buff.attack;
     }
 
     // 传入受伤方的buff，计算相关的减伤
     public void CalDamaged(Buff buff)
     {
-        damage -= buff.defend[attack_type];     // 肉搏 兵刃 气功
+        commondamage -= buff.defend[attack_type];     // 肉搏 兵刃 气功
         // 近战 远程
-        damage -= buff.defend[attack_mode];
-        if (damage < 1) damage = 1; // damage不能低于1
+        commondamage -= buff.defend[attack_mode];
+        if (commondamage < 1) commondamage = 1; // damage不能低于1
     }
 }
-
+public class Heal
+{
+    public Unit source;
+    public Unit target;
+    public int value;
+    public Heal(Unit from, Unit to, int hp)
+    {
+        source = from;
+        target = to;
+        value = hp;
+    }
+}
 public class HpChange
 {
     public int before;

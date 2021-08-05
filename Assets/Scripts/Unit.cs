@@ -14,6 +14,7 @@ public class Unit:IComparable
     public Type type;
 
     public Players players;
+    private SkillManager skillmanager;
     public Transform transform;
     public int client;
     public int row;
@@ -45,6 +46,7 @@ public class Unit:IComparable
     {
         type = unitinfo.type;
         players = gameinfo.players;
+        skillmanager = players.gameinfo.skills;
         transform = father.transform;
         client = cl;
         row = r;
@@ -147,9 +149,12 @@ public class Unit:IComparable
         }
 
         // 多目标
-        if (enemies.Count > projectile.value)
+        if (projectile.lockobj == 1)
         {
-            enemies.RemoveRange(projectile.value, enemies.Count - projectile.value);
+            if (enemies.Count > projectile.value)
+            {
+                enemies.RemoveRange(projectile.value, enemies.Count - projectile.value);
+            }
         }
 
         return enemies;
@@ -180,13 +185,12 @@ public class Unit:IComparable
         }
         return false;
     }
-
     public void GetBorder(out float left, out float right)
     {
         left = transform.localPosition.x - width / 2;
         right = transform.localPosition.x + width / 2;
     }
-    public int calmdown = 0;
+    private int calmdown = 0;
     public void Move()
     {
         // 对于建筑来说，建造期间的calmdown恒大于0，在Building.Move中进行控制
@@ -221,12 +225,12 @@ public class Unit:IComparable
                             if (currow >= 0 && currow < players.gameinfo.row)
                             {
                                 Projection projection = players.gameinfo.background.InsProjection();
-                                projection.Init(prinfo, projectile, transform.localPosition + new Vector3(0, 10 * i, 0), client, this, enemies[0], players);
+                                projection.Init(prinfo, projectile, transform.localPosition + new Vector3(0, -10 * i, 0), client, this, enemies[0], players);
                                 players.projections.Add(projection);
                             }
                         }
                     }
-                    calmdown = (int)(attackspeed / (1 + (basebuff.attack_speed + buff.attack_speed) / 100f));
+                    ResetCD();
                 }
             }
             if (calmdown == 0)   // 这里判断不能省略，因为有些技能会在AFTER_CHOOSE_OBJECT时机里把calmdown重置
@@ -235,6 +239,83 @@ public class Unit:IComparable
             }
         }
 
+    }
+    public HpChange TakeDamage(Damage damage)
+    {
+        // 计算受伤方buff
+        // 未考虑身上的buff，仅考虑全局buff
+        damage.CalDamaged(basebuff);
+        damage.CalDamaged(buff);
+
+        // 插入时机：受到伤害前
+        skillmanager.TriggerSkills(this, EVENT.BEFORE_DAMAGED, damage);
+
+        HpChange hpchange = new HpChange(hp, hp - damage.GetDamage());
+        // 防止伤害溢出
+        if(hpchange.later < 0)
+        {
+            hpchange.later = 0;
+        }
+        hp = hpchange.later;
+
+        // 更新血条和伤害指示
+        if (type == Type.SOLDIER)
+        {
+            soldier.SetHpBar();
+            soldier.DamageTip(damage);
+        }
+        else if (type == Type.BUILDING)
+        {
+            building.DamageTip(damage);
+        }
+
+        // 插入时机：受到伤害后
+        if (damage.GetDamage() > 0)
+        {
+            skillmanager.TriggerSkills(this, EVENT.AFTER_DAMAGED, damage);
+        }
+
+        // 插入时机：生命值改变后
+        if (hpchange.before != hpchange.later)
+        {
+            skillmanager.TriggerSkills(this, EVENT.HPCHANGE, hpchange);
+        }
+
+        return hpchange;
+    }
+    public HpChange RestoreHp(Heal heal)
+    {
+        HpChange hpchange = new HpChange(hp, hp + heal.value);
+        if(hpchange.later > maxhp)
+        {
+            hpchange.later = maxhp;
+        }
+        hp = hpchange.later;
+        heal.value = hpchange.later - hpchange.before;
+        
+        // 插入时机：生命值改变后
+        if (hpchange.before != hpchange.later)
+        {
+            // 更新血条和伤害指示
+            if (type == Type.SOLDIER)
+            {
+                soldier.SetHpBar();
+                soldier.HealTip(heal);
+            }
+            else if (type == Type.BUILDING)
+            {
+                building.HealTip(heal);
+            }
+            skillmanager.TriggerSkills(this, EVENT.HPCHANGE, hpchange);
+        }
+        return hpchange;
+    }
+
+    // 重置CD,传入cd，表明再过这么长时间才能再次移动/攻击。参数省略表示默认CD
+    public void ResetCD(int cd = -1)
+    {
+        if (cd == -1) calmdown = (int)(attackspeed / (1 + (basebuff.attack_speed + buff.attack_speed) / 100f));
+        else calmdown = cd;
     }
     public bool HasSkill(string skill)
     {

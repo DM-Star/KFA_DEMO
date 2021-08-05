@@ -52,6 +52,7 @@ public class Building : MonoBehaviour
     private int collect_iron;
     public BuildingInfo buinfo;
     public Unit unit;
+    public HpChangeTip hpchangeins;
 
     // 当前建造状态，0无建筑，小于maxstatue建造中，=maxstatus完成建造
     public int status;
@@ -91,7 +92,7 @@ public class Building : MonoBehaviour
                 render.color = new Color(render.color.r, render.color.g, render.color.b, 0.25f + complete / 4);
                 int newmaxhp = System.Convert.ToInt32(buinfo.unitinfo.maxhp * complete);
                 int hpdelta = newmaxhp - unit.maxhp;
-                unit.calmdown = 1000000;    // 建造期间不能移动、发射
+                unit.ResetCD(100000000);    // 建造期间不能移动、发射
                 if (hpdelta > 0)
                 {
                     unit.maxhp += hpdelta;
@@ -111,7 +112,7 @@ public class Building : MonoBehaviour
                     {
                         Debug.Log(string.Format("【对手】建造完成:{0}  [{1}, {2}]", buinfo.name, row, col));
                     }
-                    unit.calmdown = 0;  // 建造完成可以移动、发射
+                    unit.ResetCD(0);  // 建造完成可以移动、发射
                 }
             }
             else
@@ -175,6 +176,16 @@ public class Building : MonoBehaviour
         player.units.Add(transform, unit);
         render.color = new Color(render.color.r, render.color.g, render.color.b, 0.25f);
         render.sprite = buinfo.sprite[player.isclient];
+    }
+    public void DamageTip(Damage damage)
+    {
+        HpChangeTip hpchange = Instantiate(hpchangeins, transform.parent);
+        hpchange.Init(damage, transform.localPosition + new Vector3(-5, 0, 0));
+    }
+    public void HealTip(Heal heal)
+    {
+        HpChangeTip hpchange = Instantiate(hpchangeins, transform.parent);
+        hpchange.Init(heal, transform.localPosition + new Vector3(-5, 0, 0));
     }
     public void Destroy()
     {

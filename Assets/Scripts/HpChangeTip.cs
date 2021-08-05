@@ -17,7 +17,7 @@ public class HpChangeTip : MonoBehaviour
     {
         transform.localPosition = new Vector3(position.x + 5, position.y, 0);
         TextMesh damagetext = word.GetComponent<TextMesh>();
-        damagetext.text = string.Format("-{0}", damage.damage);
+        damagetext.text = string.Format("-{0}", damage.GetDamage());
 
         switch (damage.attack_type)
         {
@@ -35,6 +35,14 @@ public class HpChangeTip : MonoBehaviour
                 break;
         }
 
+        start = true;
+    }
+    public void Init(Heal heal, Vector3 position)
+    {
+        transform.localPosition = new Vector3(position.x + 5, position.y, 0);
+        TextMesh damagetext = word.GetComponent<TextMesh>();
+        damagetext.text = string.Format("+{0}", heal.value);
+        damagetext.color = new Color(0, 255, 0, 180);
         start = true;
     }
 

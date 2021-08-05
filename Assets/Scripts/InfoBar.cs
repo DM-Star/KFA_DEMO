@@ -1483,9 +1483,11 @@ public class InfoBar : MonoBehaviour
                             if (building.producing.Count > 0)
                             {
                                 // 有正在招募的士兵
+                                buildbar.gameObject.SetActive(true);
                                 Produce produce = building.producing[0];
                                 SoldierInfo soldierinfo = gameinfo.soldiermap[produce.id];
-                                buildbar.gameObject.SetActive(true);
+                                status = produce.status;
+                                maxstatus = produce.maxstatus;
                                 buildbar.maxvalue = produce.maxstatus;
                                 buildbar.value = produce.status;
                                 buildbartext.text = string.Format("{0} ({1} / {2})", soldierinfo.name, status, maxstatus);

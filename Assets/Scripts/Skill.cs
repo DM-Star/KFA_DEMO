@@ -55,7 +55,7 @@ public class SkillManager
                    Damage damage = data as Damage;
                    if (self.TagNum("tonggui") > 0)
                    {
-                       damage.damage = damage.damage * 2;
+                       damage.commondamage = damage.commondamage * 2;
                    }
                }
                else if (evente == EVENT.HPCHANGE)
@@ -97,7 +97,7 @@ public class SkillManager
                Damage damage = data as Damage;
                if(damage.attack_mode == 4)
                {
-                   self.calmdown = 0;
+                   self.ResetCD(0);
                }
                
                return;
@@ -163,7 +163,7 @@ public class SkillManager
                                    prodown.dir = new UnityEngine.Vector3(right, -1, 0).normalized;
                                    self.players.projections.Add(proup);
                                    self.players.projections.Add(prodown);
-                                   self.calmdown = (int)(self.attackspeed / (1 + (self.basebuff.attack_speed + self.buff.attack_speed) / 100f));
+                                   self.ResetCD();
                                    return;
                                }
                            }
@@ -179,6 +179,40 @@ public class SkillManager
                return self.HasSkill("feihua");
            }
            );
+
+        // 维修：每秒钟为相邻的友方建筑回复50点生命值
+        CreateSkill(
+            "weixiu",
+            new List<EVENT> { EVENT.AFTER_CHOOSE_OBJECT },
+            (Unit self, EVENT evente, object data) =>
+            {
+                List<Unit> enemies = data as List<Unit>;
+                // 重新获取敌人目标
+                if (enemies.Count > 0) enemies.Clear();
+                Building[,] buildings = self.players.GetPlayer(self.client).buildings;
+                Building weixiuzhan = self.building;
+                foreach(Building friend in buildings)
+                {
+                    if (friend.id != 0)
+                    {
+                        int distance = Math.Abs(friend.row - weixiuzhan.row) + Math.Abs(friend.col - weixiuzhan.col);
+                        if (distance == 1)
+                        {
+                            Heal heal = new Heal(self, friend.unit, 50);
+                            HpChange hpchange = friend.unit.RestoreHp(heal);
+                            if (hpchange.before != hpchange.later)
+                            {
+                                self.ResetCD();
+                            }
+                        }
+                    }
+                }
+                return;
+            },
+           (Unit self, object data) =>
+           {
+               return self.HasSkill("weixiu") && self.type == Unit.Type.BUILDING;
+           });
     }
 
     private Dictionary<string, Skill> skilltable;

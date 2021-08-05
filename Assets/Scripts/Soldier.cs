@@ -44,6 +44,11 @@ public class Soldier : MonoBehaviour
         HpChangeTip hpchange = Instantiate(hpchangeins, transform.parent);
         hpchange.Init(damage, transform.localPosition);
     }
+    public void HealTip(Heal heal)
+    {
+        HpChangeTip hpchange = Instantiate(hpchangeins, transform.parent);
+        hpchange.Init(heal, transform.localPosition);
+    }
     private void OnDestroy()
     {
         player.units.Remove(transform);
