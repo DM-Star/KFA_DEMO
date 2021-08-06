@@ -26,20 +26,20 @@ public class Info
         desc = info[3];
         food = Convert.ToInt32(info[5]);
         iron = Convert.ToInt32(info[6]);
-        building = Convert.ToInt32(info[29]);
-        string[] prebuildings = info[30].Split('|');
+        building = Convert.ToInt32(info[7]);
+        string[] prebuildings = info[8].Split('|');
         foreach (string prebuilding in prebuildings)
         {
             pre_building.Add(Convert.ToInt32(prebuilding));
         }
 
-        string[] preresearchs = info[31].Split('|');
+        string[] preresearchs = info[9].Split('|');
         foreach (string presearch in preresearchs)
         {
             pre_research.Add(Convert.ToInt32(presearch));
         }
-        time = Convert.ToInt32(info[32]);
-        path = info[33];
+        time = Convert.ToInt32(info[10]);
+        path = info[11];
     }
 }
 public class BuildingInfo:Info
@@ -64,20 +64,9 @@ public class BuildingInfo:Info
         sprite[0] = sprite[1] = null;
     }
 }
-public class ResearchInfo
+public class ResearchInfo:Info
 {
-    public int id;
-    public string name;
-    public string desc;
-    public int food;
-    public int iron;
-    public int building;
-    public int time;
     public int max;
-    public string path;
-    public List<int> pre_building;
-    public List<int> pre_research;
-
     public class BuffInfo
     {
         public int type;
@@ -127,43 +116,22 @@ public class ResearchInfo
     public int buffnum;
     public List<BuffInfo> buffinfos;
 
-    public ResearchInfo(string[] info)
+    public ResearchInfo(string[] info):base(info)
     {
-        pre_building = new List<int>();
-        pre_research = new List<int>();
         buffinfos = new List<BuffInfo>();
 
-        id = Convert.ToInt32(info[0]);
-        name = info[1];
-        desc = info[2];
-        food = Convert.ToInt32(info[4]);
-        iron = Convert.ToInt32(info[5]);
-        building = Convert.ToInt32(info[6]);
-        time = Convert.ToInt32(info[9]);
-        max = Convert.ToInt32(info[10]);
-        path = info[17];
+        max = Convert.ToInt32(info[12]);
 
-        string[] prebuildings = info[7].Split('|');
-        foreach (string prebuilding in prebuildings)
-        {
-            pre_building.Add(Convert.ToInt32(prebuilding));
-        }
-
-        string[] preresearchs = info[8].Split('|');
-        foreach (string presearch in preresearchs)
-        {
-            pre_research.Add(Convert.ToInt32(presearch));
-        }
-
-        buffnum = Convert.ToInt32(info[11]);
+        
+        buffnum = Convert.ToInt32(info[13]);
         for(int i = 0; i < buffnum; i++)
         {
             BuffInfo buff = new BuffInfo();
-            buff.type = Convert.ToInt32(info[12]);
-            buff.SetTargets(info[13]);
-            buff.SetEffects(info[14]);
-            buff.SetValues(info[15]);
-            buff.SetSkills(info[16]);
+            buff.type = Convert.ToInt32(info[14+i]);
+            buff.SetTargets(info[15+i]);
+            buff.SetEffects(info[16+i]);
+            buff.SetValues(info[17+i]);
+            buff.SetSkills(info[18+i]);
             buffinfos.Add(buff);
         }
     }
@@ -183,18 +151,18 @@ public class Projectile
     public int attack_mood; // 攻击方式：4近战 5远程
     public Projectile(string[] info)
     {
-        id = Convert.ToInt32(info[9]);
+        id = Convert.ToInt32(info[14]);
         if (id != 0)
         {
-            attack_type = Convert.ToInt32(info[10]);
-            attack_mood = Convert.ToInt32(info[11]);
-            speed = (float)Convert.ToDouble(info[12]);
-            distance = (float)Convert.ToDouble(info[13]);
-            lockobj = Convert.ToInt32(info[14]);
-            value = Convert.ToInt32(info[15]);
-            destroy = Convert.ToInt32(info[16]);
-            crossnum = Convert.ToInt32(info[17]);
-            attack = Convert.ToInt32(info[18]);
+            attack_type = Convert.ToInt32(info[15]);
+            attack_mood = Convert.ToInt32(info[16]);
+            speed = (float)Convert.ToDouble(info[17]);
+            distance = (float)Convert.ToDouble(info[18]);
+            lockobj = Convert.ToInt32(info[19]);
+            value = Convert.ToInt32(info[20]);
+            destroy = Convert.ToInt32(info[21]);
+            crossnum = Convert.ToInt32(info[22]);
+            attack = Convert.ToInt32(info[23]);
         }
     }
 }
@@ -233,28 +201,28 @@ public class UnitInfo
 
         id = Convert.ToInt32(info[0]);
 
-        maxhp = Convert.ToInt32(info[7]);
-        hp = Convert.ToInt32(info[8]);
+        maxhp = Convert.ToInt32(info[12]);
+        hp = Convert.ToInt32(info[13]);
 
         projectile = new Projectile(info);
         if (projectile.id != 0)
         {
-            attackspeed = Convert.ToInt32(info[19]);
-            attackrange = new AttackRange(info[20]);
+            attackspeed = Convert.ToInt32(info[24]);
+            attackrange = new AttackRange(info[25]);
         }
 
-        hitdefend = Convert.ToInt32(info[22]);
-        cutdefend = Convert.ToInt32(info[23]);
-        wavedefend = Convert.ToInt32(info[24]);
-        meleedefend = Convert.ToInt32(info[25]);
-        rangeddefend = Convert.ToInt32(info[26]);
+        hitdefend = Convert.ToInt32(info[27]);
+        cutdefend = Convert.ToInt32(info[28]);
+        wavedefend = Convert.ToInt32(info[29]);
+        meleedefend = Convert.ToInt32(info[30]);
+        rangeddefend = Convert.ToInt32(info[31]);
 
-        speed = (float)Convert.ToDouble(info[27]);
+        speed = (float)Convert.ToDouble(info[32]);
 
         skills = new List<string>();
-        if (info[28].Length > 0)
+        if (info[33].Length > 0)
         {
-            string[] skillsstr = info[28].Split('|');
+            string[] skillsstr = info[33].Split('|');
             foreach (string skill in skillsstr)
             {
                 skills.Add(skill);
@@ -381,7 +349,7 @@ public class GameInfo : MonoBehaviour
             if (line.Length > 0)
             {
                 string[] info = line.Split('\t');
-                string[] modes = info[3].Split('|');
+                string[] modes = info[4].Split('|');
                 foreach (string mode in modes)
                 {
                     if (System.Convert.ToInt32(mode) == gamemode)

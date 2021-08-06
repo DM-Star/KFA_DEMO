@@ -27,17 +27,15 @@ public class AI
         {
             case 1:
                 buildingpriority = new List<int[]> {
-                    new int[] { 3, 3 },
-                    new int[] { 4, 1 },
+                    new int[] { 3, 4 },
+                    new int[] { 4, 2 },
                     new int[] { 1, 1 },
-                    new int[] { 5, 1 },
-                    new int[] { 9, 1 },
-                    new int[] { 11, 2 },
-                    new int[] { 8, 1 },
-                    new int[] { 10, 1 },
+                    new int[] { 12, 2 },
                     new int[] { 18, 1 },
-                    new int[] { 19, 1 },
-                    new int[] { 25, 1 }
+                    new int[] { 7, 1 },
+                    new int[] { 15, 1 },
+                    new int[] { 22, 1 },
+                    new int[] { 25, 1 },
                 };
                 break;
         }
@@ -48,7 +46,7 @@ public class AI
         switch (gameinfo.gamemode)
         {
             case 1:
-                researchpriority = new List<int> { 1, 2, 11, 12, 13, 14 };
+                researchpriority = new List<int> { 1, 21, 22, 23, 9, 10 };
                 break;
         }
     }
@@ -59,7 +57,7 @@ public class AI
         switch (gameinfo.gamemode)
         {
             case 1:
-                soldierpriority = new List<int> { 7, 6, 5 };
+                soldierpriority = new List<int> { 13, 12, 11 };
                 break;
         }
     }

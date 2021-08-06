@@ -61,7 +61,7 @@ public class SkillManager
                else if (evente == EVENT.HPCHANGE)
                {
                    HpChange change = data as HpChange;
-                   if(2 * change.later < self.maxhp)
+                   if(5 * change.later < self.maxhp)
                    {
                        if(self.TagNum("tonggui") == 0)
                        {
