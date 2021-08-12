@@ -55,7 +55,7 @@ public class SkillManager
                    Damage damage = data as Damage;
                    if (self.TagNum("tonggui") > 0)
                    {
-                       damage.commondamage = damage.commondamage * 2;
+                       damage.commondamage = (int)(damage.commondamage * 1.5);
                    }
                }
                else if (evente == EVENT.HPCHANGE)
@@ -66,8 +66,8 @@ public class SkillManager
                        if(self.TagNum("tonggui") == 0)
                        {
                            self.AddTag("tonggui", 1);
-                           self.buff.attack_speed += 100;
-                           self.buff.speed += 100;
+                           self.buff.attack_speed += 50;
+                           self.buff.speed += 50;
                        }
                    }
                    else

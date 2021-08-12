@@ -21,6 +21,7 @@ ScriptsOnlyBuild:
     - UnityEditor.U2D.Animation.BoneGizmo
     Unity.2D.IK.Editor.dll:
     - UnityEditor.U2D.IK.IKEditorManager
+    - UnityEditor.U2D.IK.IKGizmos
     Unity.2D.IK.Runtime.dll:
     - UnityEditor.U2D.IK.IKEditorManagerHelper
     Unity.2D.Tilemap.Editor.dll:
@@ -37,6 +38,8 @@ ScriptsOnlyBuild:
     - UnityEditor.TestTools.TestRunner.Api.CallbacksHolder
     - UnityEditor.TestTools.TestRunner.TestListCacheData
     - UnityEditor.TestTools.TestRunner.TestRun.TestJobDataHolder
+    UnityEditor.UI.dll:
+    - UnityEditor.UI.TextEditor
     UnityEngine.UI.dll:
     - UnityEngine.EventSystems.EventSystem
     - UnityEngine.EventSystems.StandaloneInputModule
@@ -425,7 +428,7 @@ ScriptsOnlyBuild:
     className: ToggleGroup
   - hash:
       serializedVersion: 2
-      Hash: 1305808b391d898e4e88a78acf00594e
+      Hash: be5d768c8eec01800c9332bbdcb089ae
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: InfoBar
@@ -689,7 +692,7 @@ ScriptsOnlyBuild:
     className: Players
   - hash:
       serializedVersion: 2
-      Hash: bb597b87b657ddf8eda978c7c239f9e3
+      Hash: 94da83965c0082d88313e9f53e5a9028
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GameInfo
@@ -713,7 +716,7 @@ ScriptsOnlyBuild:
     className: TMP_ScrollbarEventHandler
   - hash:
       serializedVersion: 2
-      Hash: bac866a27f1e25929919caf3635afce4
+      Hash: 702c6d6450df1203e78b47bc3f7ff583
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Building

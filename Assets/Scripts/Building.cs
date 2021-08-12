@@ -152,14 +152,15 @@ public class Building : MonoBehaviour
                         int soid = produce.id;
                         player.FinishProduce(this, soid);
                         producing.RemoveAt(0);
+                        Position pos = new Position(player.isclient, row, col);
                         if (producing.Count == 0)
                         {
                             // 列表清空了
-                            Position pos = new Position(player.isclient, row, col);
                             gameinfo.infobar.statuses.Enqueue(new StatusMsg(9, pos));
                         }
                         if (player.isclient == gameinfo.client)
                         {
+                            gameinfo.infobar.statuses.Enqueue(new StatusMsg(12, pos, soid));
                             gameinfo.canvas.ShowMsg(string.Format("{0} 招募完成。", gameinfo.soldiermap[produce.id].name));
                         }
                     }

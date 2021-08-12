@@ -83,6 +83,7 @@ public class InfoBar : MonoBehaviour
     private Dictionary<int, List<BtnBuilding>> btnsoldiers;
     // 科技id映射到科技按钮，用于在按钮上展示科研进度
     private Dictionary<int, BtnBuilding> btnresearchmap;
+    private Dictionary<int, BtnBuilding> btnsoldiermap;
 
     private Image avatar;
     public Bar buildbar;
@@ -125,96 +126,110 @@ public class InfoBar : MonoBehaviour
         switch (type)
         {
             case 1:     // 建造
-                BuildingInfo tobuild = gameinfo.buildingmap[id];
-                player.StartBuild(row, col, tobuild);
-                statuses.Enqueue(new StatusMsg(1, pos, id));
-                if (self)
                 {
-                    Log(string.Format("开始建造：{0}，预计耗时：{1}秒。", tobuild.name, tobuild.time / 50));
+                    BuildingInfo tobuild = gameinfo.buildingmap[id];
+                    player.StartBuild(row, col, tobuild);
+                    statuses.Enqueue(new StatusMsg(1, pos, id));
+                    if (self)
+                    {
+                        Log(string.Format("开始建造：{0}，预计耗时：{1}秒。", tobuild.name, tobuild.time / 50));
+                    }
+                    break;
                 }
-                break;
             case 2:     // 取消建造
-                if (target.status < target.maxstatus)
                 {
-                    // 取消建造
-                    statuses.Enqueue(new StatusMsg(3, pos, id));
-                    BuildingInfo buildingInfo = gameinfo.buildingmap[id];
-                    player.CancelBuild(row, col, buildingInfo);
-                    if (self)
+                    if (target.status < target.maxstatus)
                     {
-                        Log(string.Format("取消建造：{0}。", buildingInfo.name));
+                        // 取消建造
+                        statuses.Enqueue(new StatusMsg(3, pos, id));
+                        BuildingInfo buildingInfo = gameinfo.buildingmap[id];
+                        player.CancelBuild(row, col, buildingInfo);
+                        if (self)
+                        {
+                            Log(string.Format("取消建造：{0}。", buildingInfo.name));
+                        }
                     }
-                }
-                else
-                {
-                    // 摧毁建筑
-                    statuses.Enqueue(new StatusMsg(4, pos, id));
-                    BuildingInfo buildingInfo = gameinfo.buildingmap[id];
-                    player.CancelBuild(row, col, buildingInfo);
-                    if (self)
+                    else
                     {
-                        Log(string.Format("拆除建筑：{0}。", buildingInfo.name));
+                        // 摧毁建筑
+                        statuses.Enqueue(new StatusMsg(4, pos, id));
+                        BuildingInfo buildingInfo = gameinfo.buildingmap[id];
+                        player.CancelBuild(row, col, buildingInfo);
+                        if (self)
+                        {
+                            Log(string.Format("拆除建筑：{0}。", buildingInfo.name));
+                        }
                     }
+                    break;
                 }
-                break;
             case 3:     // 研发
-                ResearchInfo toresearch = gameinfo.researchmap[id];
-                player.StartResearch(row, col, toresearch);
-                statuses.Enqueue(new StatusMsg(5, pos, id));
-                if (self)
                 {
-                    Log(string.Format("开始研发：{0}，预计耗时：{1}秒。", toresearch.name, toresearch.time / 50));
+                    ResearchInfo toresearch = gameinfo.researchmap[id];
+                    player.StartResearch(row, col, toresearch);
+                    statuses.Enqueue(new StatusMsg(5, pos, id));
+                    if (self)
+                    {
+                        Log(string.Format("开始研发：{0}，预计耗时：{1}秒。", toresearch.name, toresearch.time / 50));
+                    }
+                    break;
                 }
-                break;
             case 4:     // 取消研发
-                statuses.Enqueue(new StatusMsg(7, pos, id));
-                player.CancelResearch(id);
-                if (self)
                 {
-                    Log(string.Format("取消研发：{0}。", gameinfo.researchmap[id].name));
+                    statuses.Enqueue(new StatusMsg(7, pos, id));
+                    player.CancelResearch(id);
+                    if (self)
+                    {
+                        Log(string.Format("取消研发：{0}。", gameinfo.researchmap[id].name));
+                    }
+                    break;
                 }
-                break;
             case 5:     // 招募
-                SoldierInfo toproduce = gameinfo.soldiermap[id];
-                int qcount = player.StartProduce(target, toproduce);
-                if (qcount == 1)
                 {
-                    // 如果当前队列只有1个招募士兵，则发送消息8
-                    // 其他的表现形式待定
-                    statuses.Enqueue(new StatusMsg(8, pos, id));
-                    if (self)
+                    SoldierInfo toproduce = gameinfo.soldiermap[id];
+                    statuses.Enqueue(new StatusMsg(11, pos, id));
+                    int qcount = player.StartProduce(target, toproduce);
+                    if (qcount == 1)
                     {
-                        Log(string.Format("开始招募：{0}，预计耗时：{1}秒。", toproduce.name, toproduce.time / 50));
+                        // 如果当前队列只有1个招募士兵，则发送消息8
+                        // 其他的表现形式待定
+                        statuses.Enqueue(new StatusMsg(8, pos, id));
+                        if (self)
+                        {
+                            Log(string.Format("开始招募：{0}，预计耗时：{1}秒。", toproduce.name, toproduce.time / 50));
+                        }
                     }
-                }
-                else
-                {
-                    if (self)
+                    else
                     {
-                        Log(string.Format("{0} 加入招募队列，队列前方还有 {1} 个招募任务。", toproduce.name, qcount - 1));
+                        if (self)
+                        {
+                            Log(string.Format("{0} 加入招募队列，队列前方还有 {1} 个招募任务。", toproduce.name, qcount - 1));
+                        }
                     }
+                    break;
                 }
-                break;
             case 6:     // 取消招募
-                string name = gameinfo.soldiermap[target.producing[target.producing.Count - 1].id].name;
-                qcount = player.CancelProduce(target);
-                if (qcount == 0)
                 {
-                    // 如果招募队列清空，发送信息10
-                    statuses.Enqueue(new StatusMsg(10, pos));
-                    if (self)
+                    string name = gameinfo.soldiermap[target.producing[target.producing.Count - 1].id].name;
+                    statuses.Enqueue(new StatusMsg(12, pos, id));
+                    int qcount = player.CancelProduce(target);
+                    if (qcount == 0)
                     {
-                        Log(string.Format("取消招募：{0}。", name, qcount));
+                        // 如果招募队列清空，发送信息10
+                        statuses.Enqueue(new StatusMsg(10, pos));
+                        if (self)
+                        {
+                            Log(string.Format("取消招募：{0}。", name, qcount));
+                        }
                     }
-                }
-                else
-                {
-                    if (self)
+                    else
                     {
-                        Log(string.Format("取消招募：{0}，队列中还有 {1} 个招募任务。", name, qcount));
+                        if (self)
+                        {
+                            Log(string.Format("取消招募：{0}，队列中还有 {1} 个招募任务。", name, qcount));
+                        }
                     }
+                    break;
                 }
-                break;
         }
     }
     private void StatusChange()
@@ -230,255 +245,40 @@ public class InfoBar : MonoBehaviour
             switch (type)
             {
                 case 1:     //开始建造
-                    if (curbtn.grid.Equals(pos))
                     {
-                        // 如果消息位置是点击位置
-                        // 熄灭建筑按钮和建筑类型按钮
-                        if (pos.right == gameinfo.client)
-                        {
-                            foreach (BtnBuilding btn in btnbuildings[curbtn.buildingtype])
-                            {
-                                btn.gameObject.SetActive(false);
-                            }
-                            for (int i = 0; i < 5; i++)
-                            {
-                                btnbuildingtypes[i].gameObject.SetActive(false);
-                            }
-                            // 熄灭建造按钮，点亮取消按钮
-                            btnconfirm.SetActive(false);
-                            btncancel.GetComponentInChildren<Text>().text = "取消";
-                            btncancel.SetActive(true);
-                        }
-                        else
-                        {
-                            operationbar.SetActive(true);
-                            ShowEnemyBuilding(gameinfo.buildingmap[msg.id]);
-                        }
-                        // 展示进度条
-                        progressbar.SetActive(true);
-                    }
-
-                    break;
-                case 2:     // 建造完毕
-                    Building finish = gameinfo.players.GetBuilding(curbtn.grid);
-                    if(finish != null)
-                    {
-                        buid = finish.id;
-                    }
-                    else
-                    {
-                        buid = 0;
-                    }
-                    if (pos.right == gameinfo.client)
-                    {
-                        // 自己的建筑
                         if (curbtn.grid.Equals(pos))
                         {
                             // 如果消息位置是点击位置
-                            if (btnresearchs.ContainsKey(buid))
+                            // 熄灭建筑按钮和建筑类型按钮
+                            if (pos.right == gameinfo.client)
                             {
-                                foreach (BtnBuilding btn in btnresearchs[buid])
+                                foreach (BtnBuilding btn in btnbuildings[curbtn.buildingtype])
                                 {
-                                    btn.gameObject.SetActive(true);
+                                    btn.gameObject.SetActive(false);
                                 }
-                            }
-                            if (btnsoldiers.ContainsKey(buid))
-                            {
-                                foreach (BtnBuilding btn in btnsoldiers[buid])
+                                for (int i = 0; i < 5; i++)
                                 {
-                                    btn.gameObject.SetActive(true);
+                                    btnbuildingtypes[i].gameObject.SetActive(false);
                                 }
-                                int soid = curbtn.soldier;
-                                if (soid != 0)
-                                {
-                                    SoldierInfo soinfo = gameinfo.soldiermap[soid];
-                                    if (soinfo.building == buid)
-                                    {
-                                        ShowSoldierInfo(soinfo);
-                                        btnconfirm.GetComponentInChildren<Text>().text = "招募";
-                                        btnconfirm.SetActive(true);
-                                    }
-                                }
-                            }
-                            btncancel.GetComponentInChildren<Text>().text = "拆除";
-                        }
-                        else
-                        {
-                            // 消息非点击位置
-                            if (buid != 0)
-                            {
-                                // 当前位置存在建筑
-                                int reid = curbtn.research;
-                                int soid = curbtn.soldier;
-                                if (reid != 0)
-                                {
-                                    ShowResearchInfo(gameinfo.researchmap[reid]);
-                                }
-                                else if(soid != 0)
-                                {
-                                    SoldierInfo soinfo = gameinfo.soldiermap[soid];
-                                    if (soinfo.building == buid)
-                                    {
-                                        ShowSoldierInfo(soinfo);
-                                    }
-                                }
-                                else
-                                {
-                                    ShowBuildingInfo(gameinfo.buildingmap[buid]);
-                                }
+                                // 熄灭建造按钮，点亮取消按钮
+                                btnconfirm.SetActive(false);
+                                btncancel.GetComponentInChildren<Text>().text = "取消";
+                                btncancel.SetActive(true);
                             }
                             else
                             {
-                                buid = curbtn.building;
-                                // 当前位置不存在建筑，但是玩家点击了建筑按钮
-                                if(buid != 0)
-                                {
-                                    ShowBuildingInfo(gameinfo.buildingmap[buid]);
-                                }
+                                operationbar.SetActive(true);
+                                ShowEnemyBuilding(gameinfo.buildingmap[msg.id]);
                             }
+                            // 展示进度条
+                            progressbar.SetActive(true);
                         }
+
+                        break;
                     }
-                    break;
-                case 3:     // 取消建造
-                            // 展示建筑按钮和建筑类型按钮
-                    if (curbtn.grid.Equals(pos))
+                case 2:     // 建造完毕
                     {
-                        if (pos.right == gameinfo.client)
-                        {
-                            // 自己取消建造自己的建筑
-                            foreach (BtnBuilding btn in btnbuildings[curbtn.buildingtype])
-                            {
-                                btn.gameObject.SetActive(true);
-                            }
-                            for (int i = 0; i < 5; i++)
-                            {
-                                btnbuildingtypes[i].gameObject.SetActive(true);
-                            }
-                            // 熄灭科技按钮
-                            if (btnresearchs.ContainsKey(msg.id))
-                            {
-                                foreach (BtnBuilding btn in btnresearchs[msg.id])
-                                {
-                                    btn.gameObject.SetActive(false);
-                                }
-                            }
-                            if (btnsoldiers.ContainsKey(msg.id))
-                            {
-                                foreach (BtnBuilding btn in btnsoldiers[msg.id])
-                                {
-                                    btn.gameObject.SetActive(false);
-                                }
-                            }
-                            // 熄灭进度条
-                            progressbar.SetActive(false);
-                            // 点亮建造按钮，熄灭取消按钮
-                            btnconfirm.GetComponentInChildren<Text>().text = "建造";
-                            btnconfirm.SetActive(true);
-                            btncancel.SetActive(false);
-                            ShowBuildingInfo(gameinfo.buildingmap[buid]);
-                        }
-                        else
-                        {
-                            //敌人取消了自己的建筑
-                            // 熄灭进度条
-                            progressbar.SetActive(false);
-                            // 熄灭操作条
-                            operationbar.SetActive(false);
-                        }
-                    }
-                    break;
-                case 4:     // 建筑被毁
-                    if (curbtn.grid.Equals(pos))
-                    {
-                        if (pos.right == gameinfo.client)
-                        {
-                            // 被毁的是自己的建筑
-                            foreach (BtnBuilding btn in btnbuildings[curbtn.buildingtype])
-                            {
-                                btn.gameObject.SetActive(true);
-                            }
-                            for (int i = 0; i < 5; i++)
-                            {
-                                btnbuildingtypes[i].gameObject.SetActive(true);
-                            }
-                            // 熄灭科技按钮
-                            if (btnresearchs.ContainsKey(msg.id))
-                            {
-                                foreach (BtnBuilding btn in btnresearchs[msg.id])
-                                {
-                                    btn.gameObject.SetActive(false);
-                                }
-                            }
-                            if (btnsoldiers.ContainsKey(msg.id))
-                            {
-                                foreach (BtnBuilding btn in btnsoldiers[msg.id])
-                                {
-                                    btn.gameObject.SetActive(false);
-                                }
-                            }
-                            // 熄灭进度条
-                            progressbar.SetActive(false);
-                            // 点亮建造按钮，熄灭取消按钮
-                            btnconfirm.GetComponentInChildren<Text>().text = "建造";
-                            btnconfirm.SetActive(true);
-                            btncancel.SetActive(false);
-                            ShowBuildingInfo(gameinfo.buildingmap[buid]);
-                        }
-                        else
-                        {
-                            // 被毁的是敌人的建筑
-                            // 熄灭进度条
-                            progressbar.SetActive(false);
-                            // 熄灭操作条
-                            operationbar.SetActive(false);
-                        }
-                    }
-                    else
-                    {
-                        buid = gameinfo.players.GetBuilding(curbtn.grid).id;
-                        // 可能影响当前格子的前驱
-                        if (buid != 0)
-                        {
-                            int reid = curbtn.research;
-                            int soid = curbtn.soldier;
-                            if (reid != 0)
-                            {
-                                ShowResearchInfo(gameinfo.researchmap[reid]);
-                            }
-                            else if(soid != 0)
-                            {
-                                SoldierInfo soinfo = gameinfo.soldiermap[soid];
-                                if (buid == soinfo.building)
-                                {
-                                    ShowSoldierInfo(soinfo);
-                                }
-                            }
-                            else
-                            {
-                                ShowBuildingInfo(gameinfo.buildingmap[buid]);
-                            }
-                        }
-                    }
-                    break;
-                case 5:     // 开始研发
-                    if (pos.right == gameinfo.client)
-                    {
-                        foreach (BtnBuilding btn in btnresearchs[building.id])
-                        {
-                            btn.gameObject.SetActive(false);
-                        }
-                        // 展示进度条
-                        progressbar.SetActive(true);
-                        // 熄灭建造按钮，点亮取消按钮
-                        btnconfirm.SetActive(false);
-                        btncancel.GetComponentInChildren<Text>().text = "取消";
-                        btncancel.SetActive(true);
-                    }
-                    break;
-                case 6:     // 研发完成
-                    if (pos.right == gameinfo.client)
-                    {
-                        finish = gameinfo.players.GetBuilding(curbtn.grid);
+                        Building finish = gameinfo.players.GetBuilding(curbtn.grid);
                         if (finish != null)
                         {
                             buid = finish.id;
@@ -487,28 +287,179 @@ public class InfoBar : MonoBehaviour
                         {
                             buid = 0;
                         }
+                        if (pos.right == gameinfo.client)
+                        {
+                            // 自己的建筑
+                            if (curbtn.grid.Equals(pos))
+                            {
+                                // 如果消息位置是点击位置
+                                if (btnresearchs.ContainsKey(buid))
+                                {
+                                    foreach (BtnBuilding btn in btnresearchs[buid])
+                                    {
+                                        btn.gameObject.SetActive(true);
+                                    }
+                                }
+                                if (btnsoldiers.ContainsKey(buid))
+                                {
+                                    foreach (BtnBuilding btn in btnsoldiers[buid])
+                                    {
+                                        btn.UpdateSoProgreeText(0);
+                                        btn.gameObject.SetActive(true);
+                                    }
+                                    int soid = curbtn.soldier;
+                                    if (soid != 0)
+                                    {
+                                        SoldierInfo soinfo = gameinfo.soldiermap[soid];
+                                        if (soinfo.building == buid)
+                                        {
+                                            ShowSoldierInfo(soinfo);
+                                            btnconfirm.GetComponentInChildren<Text>().text = "招募";
+                                            btnconfirm.SetActive(true);
+                                        }
+                                    }
+                                }
+                                btncancel.GetComponentInChildren<Text>().text = "拆除";
+                            }
+                            else
+                            {
+                                // 消息非点击位置
+                                if (buid != 0)
+                                {
+                                    // 当前位置存在建筑
+                                    int reid = curbtn.research;
+                                    int soid = curbtn.soldier;
+                                    if (reid != 0)
+                                    {
+                                        ShowResearchInfo(gameinfo.researchmap[reid]);
+                                    }
+                                    else if (soid != 0)
+                                    {
+                                        SoldierInfo soinfo = gameinfo.soldiermap[soid];
+                                        if (soinfo.building == buid)
+                                        {
+                                            ShowSoldierInfo(soinfo);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        ShowBuildingInfo(gameinfo.buildingmap[buid]);
+                                    }
+                                }
+                                else
+                                {
+                                    buid = curbtn.building;
+                                    // 当前位置不存在建筑，但是玩家点击了建筑按钮
+                                    if (buid != 0)
+                                    {
+                                        ShowBuildingInfo(gameinfo.buildingmap[buid]);
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                case 3:     // 取消建造
+                    {
+                        // 展示建筑按钮和建筑类型按钮
                         if (curbtn.grid.Equals(pos))
                         {
-
-                            if (btnresearchs.ContainsKey(buid))
+                            if (pos.right == gameinfo.client)
                             {
-                                foreach (BtnBuilding btn in btnresearchs[buid])
+                                // 自己取消建造自己的建筑
+                                foreach (BtnBuilding btn in btnbuildings[curbtn.buildingtype])
                                 {
                                     btn.gameObject.SetActive(true);
                                 }
+                                for (int i = 0; i < 5; i++)
+                                {
+                                    btnbuildingtypes[i].gameObject.SetActive(true);
+                                }
+                                // 熄灭科技按钮
+                                if (btnresearchs.ContainsKey(msg.id))
+                                {
+                                    foreach (BtnBuilding btn in btnresearchs[msg.id])
+                                    {
+                                        btn.gameObject.SetActive(false);
+                                    }
+                                }
+                                if (btnsoldiers.ContainsKey(msg.id))
+                                {
+                                    foreach (BtnBuilding btn in btnsoldiers[msg.id])
+                                    {
+                                        btn.gameObject.SetActive(false);
+                                    }
+                                }
+                                // 熄灭进度条
+                                progressbar.SetActive(false);
+                                // 点亮建造按钮，熄灭取消按钮
+                                btnconfirm.GetComponentInChildren<Text>().text = "建造";
+                                btnconfirm.SetActive(true);
+                                btncancel.SetActive(false);
+                                ShowBuildingInfo(gameinfo.buildingmap[buid]);
                             }
-                            curbtn.research = 0;
-                            // 熄灭建造按钮，点亮取消按钮
-                            // btnconfirm.GetComponentInChildren<Text>().text = "研发";
-                            // btnconfirm.SetActive(true); // 如果次数不够了，也不能点亮建造按钮
-                            ShowBuildingInfo(gameinfo.buildingmap[buid]);
-                            btncancel.GetComponentInChildren<Text>().text = "拆除";
-                            btncancel.SetActive(true);
-
+                            else
+                            {
+                                //敌人取消了自己的建筑
+                                // 熄灭进度条
+                                progressbar.SetActive(false);
+                                // 熄灭操作条
+                                operationbar.SetActive(false);
+                            }
+                        }
+                        break;
+                    }
+                case 4:     // 建筑被毁
+                    {
+                        if (curbtn.grid.Equals(pos))
+                        {
+                            if (pos.right == gameinfo.client)
+                            {
+                                // 被毁的是自己的建筑
+                                foreach (BtnBuilding btn in btnbuildings[curbtn.buildingtype])
+                                {
+                                    btn.gameObject.SetActive(true);
+                                }
+                                for (int i = 0; i < 5; i++)
+                                {
+                                    btnbuildingtypes[i].gameObject.SetActive(true);
+                                }
+                                // 熄灭科技按钮
+                                if (btnresearchs.ContainsKey(msg.id))
+                                {
+                                    foreach (BtnBuilding btn in btnresearchs[msg.id])
+                                    {
+                                        btn.gameObject.SetActive(false);
+                                    }
+                                }
+                                if (btnsoldiers.ContainsKey(msg.id))
+                                {
+                                    foreach (BtnBuilding btn in btnsoldiers[msg.id])
+                                    {
+                                        btn.gameObject.SetActive(false);
+                                    }
+                                }
+                                // 熄灭进度条
+                                progressbar.SetActive(false);
+                                // 点亮建造按钮，熄灭取消按钮
+                                btnconfirm.GetComponentInChildren<Text>().text = "建造";
+                                btnconfirm.SetActive(true);
+                                btncancel.SetActive(false);
+                                ShowBuildingInfo(gameinfo.buildingmap[buid]);
+                            }
+                            else
+                            {
+                                // 被毁的是敌人的建筑
+                                // 熄灭进度条
+                                progressbar.SetActive(false);
+                                // 熄灭操作条
+                                operationbar.SetActive(false);
+                            }
                         }
                         else
                         {
-                            // 消息非点击位置
+                            buid = gameinfo.players.GetBuilding(curbtn.grid).id;
+                            // 可能影响当前格子的前驱
                             if (buid != 0)
                             {
                                 int reid = curbtn.research;
@@ -531,80 +482,187 @@ public class InfoBar : MonoBehaviour
                                 }
                             }
                         }
-
-                        btnresearchmap[msg.id].UpdateProgressText();
+                        break;
                     }
-                    break;
-                case 7:     // 中止研发
-                    if (pos.right == gameinfo.client)
+                case 5:     // 开始研发
                     {
-                        finish = gameinfo.players.GetBuilding(curbtn.grid);
-                        if (finish != null)
+                        if (pos.right == gameinfo.client)
                         {
-                            buid = finish.id;
-                        }
-                        else
-                        {
-                            buid = 0;
-                        }
-                        if (curbtn.grid.Equals(pos))
-                        {
-                            curbtn.research = msg.id;
-                            if (curbtn.research == 0)
+                            foreach (BtnBuilding btn in btnresearchs[building.id])
                             {
-                                btnconfirm.SetActive(false);
-                                ShowBuildingInfo(gameinfo.buildingmap[buid]);
+                                btn.gameObject.SetActive(false);
+                            }
+                            // 展示进度条
+                            progressbar.SetActive(true);
+                            // 熄灭建造按钮，点亮取消按钮
+                            btnconfirm.SetActive(false);
+                            btncancel.GetComponentInChildren<Text>().text = "取消";
+                            btncancel.SetActive(true);
+                        }
+                        break;
+                    }
+                case 6:     // 研发完成
+                    {
+                        if (pos.right == gameinfo.client)
+                        {
+                            Building finish = gameinfo.players.GetBuilding(curbtn.grid);
+                            if (finish != null)
+                            {
+                                buid = finish.id;
                             }
                             else
                             {
-                                btnconfirm.GetComponentInChildren<Text>().text = "研发";
-                                btnconfirm.SetActive(true);
-                                ShowResearchInfo(gameinfo.researchmap[curbtn.research]);
+                                buid = 0;
                             }
-
-                            if (btnresearchs.ContainsKey(buid))
+                            if (curbtn.grid.Equals(pos))
                             {
-                                foreach (BtnBuilding btn in btnresearchs[buid])
+
+                                if (btnresearchs.ContainsKey(buid))
                                 {
-                                    btn.gameObject.SetActive(true);
+                                    foreach (BtnBuilding btn in btnresearchs[buid])
+                                    {
+                                        btn.gameObject.SetActive(true);
+                                    }
+                                }
+                                curbtn.research = 0;
+                                // 熄灭建造按钮，点亮取消按钮
+                                // btnconfirm.GetComponentInChildren<Text>().text = "研发";
+                                // btnconfirm.SetActive(true); // 如果次数不够了，也不能点亮建造按钮
+                                ShowBuildingInfo(gameinfo.buildingmap[buid]);
+                                btncancel.GetComponentInChildren<Text>().text = "拆除";
+                                btncancel.SetActive(true);
+
+                            }
+                            else
+                            {
+                                // 消息非点击位置
+                                if (buid != 0)
+                                {
+                                    int reid = curbtn.research;
+                                    int soid = curbtn.soldier;
+                                    if (reid != 0)
+                                    {
+                                        ShowResearchInfo(gameinfo.researchmap[reid]);
+                                    }
+                                    else if (soid != 0)
+                                    {
+                                        SoldierInfo soinfo = gameinfo.soldiermap[soid];
+                                        if (buid == soinfo.building)
+                                        {
+                                            ShowSoldierInfo(soinfo);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        ShowBuildingInfo(gameinfo.buildingmap[buid]);
+                                    }
                                 }
                             }
 
-                            btncancel.GetComponentInChildren<Text>().text = "拆除";
-                            btncancel.SetActive(true);
+                            btnresearchmap[msg.id].UpdateReProgressText();
                         }
+                        break;
                     }
-                    break;
+                case 7:     // 中止研发
+                    {
+                        if (pos.right == gameinfo.client)
+                        {
+                            Building finish = gameinfo.players.GetBuilding(curbtn.grid);
+                            if (finish != null)
+                            {
+                                buid = finish.id;
+                            }
+                            else
+                            {
+                                buid = 0;
+                            }
+                            if (curbtn.grid.Equals(pos))
+                            {
+                                curbtn.research = msg.id;
+                                if (curbtn.research == 0)
+                                {
+                                    btnconfirm.SetActive(false);
+                                    ShowBuildingInfo(gameinfo.buildingmap[buid]);
+                                }
+                                else
+                                {
+                                    btnconfirm.GetComponentInChildren<Text>().text = "研发";
+                                    btnconfirm.SetActive(true);
+                                    ShowResearchInfo(gameinfo.researchmap[curbtn.research]);
+                                }
+
+                                if (btnresearchs.ContainsKey(buid))
+                                {
+                                    foreach (BtnBuilding btn in btnresearchs[buid])
+                                    {
+                                        btn.gameObject.SetActive(true);
+                                    }
+                                }
+
+                                btncancel.GetComponentInChildren<Text>().text = "拆除";
+                                btncancel.SetActive(true);
+                            }
+                        }
+                        break;
+                    }
                 case 8:     // 开始招募（之前招募队列为空）
-                    if (pos.right == gameinfo.client)
                     {
-                        // 展示进度条
-                        progressbar.SetActive(true);
-                        // 点亮取消按钮
-                        btncancel.GetComponentInChildren<Text>().text = "取消";
-                        btncancel.SetActive(true);
+                        if (pos.right == gameinfo.client)
+                        {
+                            // 展示进度条
+                            progressbar.SetActive(true);
+                            // 点亮取消按钮
+                            btncancel.GetComponentInChildren<Text>().text = "取消";
+                            btncancel.SetActive(true);
+                        }
+                        break;
                     }
-                    break;
                 case 9:     // 招募队列全部招募完毕
-                    if (curbtn.grid.Equals(pos))
                     {
-                        if (pos.right == gameinfo.client)
+                        if (curbtn.grid.Equals(pos))
                         {
-                            btncancel.GetComponentInChildren<Text>().text = "拆除";
-                            btncancel.SetActive(true);
+                            if (pos.right == gameinfo.client)
+                            {
+                                btncancel.GetComponentInChildren<Text>().text = "拆除";
+                                btncancel.SetActive(true);
+                            }
                         }
+                        break;
                     }
-                    break;
                 case 10:    // 招募队列完全清空
-                    if (curbtn.grid.Equals(pos))
                     {
-                        if (pos.right == gameinfo.client)
+                        if (curbtn.grid.Equals(pos))
                         {
-                            btncancel.GetComponentInChildren<Text>().text = "拆除";
-                            btncancel.SetActive(true);
+                            if (pos.right == gameinfo.client)
+                            {
+                                btncancel.GetComponentInChildren<Text>().text = "拆除";
+                                btncancel.SetActive(true);
+                            }
                         }
+                        break;
                     }
-                    break;
+                case 11:    // 增加一个招募士兵
+                    {
+                        if (pos.Equals(curbtn.grid))
+                        {
+                            if(pos.right == gameinfo.client)
+                            {
+                                btnsoldiermap[msg.id].UpdateSoProgreeText(1, 1);
+                            }
+                        }
+                        break;
+                    }
+                case 12:    // 减少一个招募士兵
+                    {
+                        if (pos.Equals(curbtn.grid))
+                        {
+                            if (pos.right == gameinfo.client)
+                            {
+                                btnsoldiermap[msg.id].UpdateSoProgreeText(1, -1);
+                            }
+                        }
+                        break;
+                    }
             }
         }
     }
@@ -848,244 +906,255 @@ public class InfoBar : MonoBehaviour
             Player player;
             switch (type)
             {
-                case 1:
-                    // 建筑类型按钮
-                    if(id != curbtn.buildingtype)
+                case 1: // 建筑类型按钮
                     {
-                        foreach (BtnBuilding btn in btnbuildings[curbtn.buildingtype])
+                        if (id != curbtn.buildingtype)
                         {
-                            btn.gameObject.SetActive(false);
-                        }
-                        foreach (BtnBuilding btn in btnbuildings[id])
-                        {
-                            btn.gameObject.SetActive(true);
-                        }
-                        curbtn.buildingtype = id;
-                    }
-                    break;
-                case 2:
-                    // 建筑按钮
-                    curbtn.building = id;
-                    btncancel.SetActive(false);
-                    btnconfirm.GetComponentInChildren<Text>().text = "建造";
-                    btnconfirm.SetActive(true);
-                    operationbar.SetActive(true);
-                    ShowBuildingInfo(gameinfo.buildingmap[id]);
-                    break;
-                case 3:
-                    // 科技按钮
-                    curbtn.research = id;
-                    btncancel.GetComponentInChildren<Text>().text = "拆除";
-                    btncancel.SetActive(true);
-                    btnconfirm.GetComponentInChildren<Text>().text = "研发";
-                    btnconfirm.SetActive(true);
-                    operationbar.SetActive(true);
-                    ShowResearchInfo(gameinfo.researchmap[id]);
-                    break;
-                case 4:
-                    // 格子
-                    if (!curbtn.grid.Equals(msg.pos))
-                    {
-                        int right = msg.pos.right;
-                        int row = msg.pos.row;
-                        int col = msg.pos.col;
-                        player = gameinfo.players.GetPlayer(right);
-                        Building building = player.buildings[row, col];
-
-                        if (curbtn.grid.right != -1)
-                        {
-                            // 先把旧的科技按钮熄灭
-                            Building oldbuilding = gameinfo.players.GetPlayer(curbtn.grid.right).buildings[curbtn.grid.row, curbtn.grid.col];
-                            if (btnresearchs.ContainsKey(oldbuilding.id))
-                            {
-                                foreach (BtnBuilding btn in btnresearchs[oldbuilding.id])
-                                {
-                                    btn.gameObject.SetActive(false);
-                                }
-                            }
-                            // 把旧的兵种按钮熄灭
-                            if (btnsoldiers.ContainsKey(oldbuilding.id))
-                            {
-                                foreach (BtnBuilding btn in btnsoldiers[oldbuilding.id])
-                                {
-                                    btn.gameObject.SetActive(false);
-                                }
-                            }
-                        }
-
-                        if (building.id == 0)
-                        {
-                            // 空地
-                            if (right == client)
-                            {
-                                foreach (BtnBuildingType btn in btnbuildingtypes)
-                                {
-                                    btn.gameObject.SetActive(true);
-                                }
-                                foreach (BtnBuilding btn in btnbuildings[curbtn.buildingtype])
-                                {
-                                    btn.gameObject.SetActive(true);
-                                }
-                                if (curbtn.building != 0)
-                                {
-                                    btncancel.SetActive(false);
-                                    btnconfirm.GetComponentInChildren<Text>().text = "建造";
-                                    btnconfirm.SetActive(true);
-                                    operationbar.SetActive(true);
-                                    ShowBuildingInfo(gameinfo.buildingmap[curbtn.building]);
-                                }
-                                else
-                                {
-                                    operationbar.SetActive(false);
-                                }
-                            }
-                            else
-                            {
-                                foreach (BtnBuildingType btn in btnbuildingtypes)
-                                {
-                                    btn.gameObject.SetActive(false);
-                                }
-                                foreach (BtnBuilding btn in btnbuildings[curbtn.buildingtype])
-                                {
-                                    btn.gameObject.SetActive(false);
-                                }
-                                operationbar.SetActive(false);
-                            }
-                            progressbar.SetActive(false);
-                        }
-                        else
-                        {
-                            // 存在建筑
-                            foreach (BtnBuildingType btn in btnbuildingtypes)
-                            {
-                                btn.gameObject.SetActive(false) ;
-                            }
                             foreach (BtnBuilding btn in btnbuildings[curbtn.buildingtype])
                             {
                                 btn.gameObject.SetActive(false);
                             }
-                            if (right == client)
+                            foreach (BtnBuilding btn in btnbuildings[id])
                             {
-                                // 是自己的建筑
-                                // 已经建造完毕
-                                operationbar.SetActive(true);
-                                if (building.status == building.maxstatus)
+                                btn.gameObject.SetActive(true);
+                            }
+                            curbtn.buildingtype = id;
+                        }
+                        break;
+                    }
+                case 2: // 建筑按钮
+                    {
+                        curbtn.building = id;
+                        btncancel.SetActive(false);
+                        btnconfirm.GetComponentInChildren<Text>().text = "建造";
+                        btnconfirm.SetActive(true);
+                        operationbar.SetActive(true);
+                        ShowBuildingInfo(gameinfo.buildingmap[id]);
+                        break;
+                    }
+                case 3: // 科技按钮
+                    {
+                        curbtn.research = id;
+                        btncancel.GetComponentInChildren<Text>().text = "拆除";
+                        btncancel.SetActive(true);
+                        btnconfirm.GetComponentInChildren<Text>().text = "研发";
+                        btnconfirm.SetActive(true);
+                        operationbar.SetActive(true);
+                        ShowResearchInfo(gameinfo.researchmap[id]);
+                        break;
+                    }
+                case 4: // 格子
+                    {
+                        if (!curbtn.grid.Equals(msg.pos))
+                        {
+                            int right = msg.pos.right;
+                            int row = msg.pos.row;
+                            int col = msg.pos.col;
+                            player = gameinfo.players.GetPlayer(right);
+                            Building building = player.buildings[row, col];
+
+                            if (curbtn.grid.right != -1)
+                            {
+                                // 先把旧的科技按钮熄灭
+                                Building oldbuilding = gameinfo.players.GetPlayer(curbtn.grid.right).buildings[curbtn.grid.row, curbtn.grid.col];
+                                if (btnresearchs.ContainsKey(oldbuilding.id))
                                 {
-                                    if (btnresearchs.ContainsKey(building.id))
+                                    foreach (BtnBuilding btn in btnresearchs[oldbuilding.id])
                                     {
-                                        // 如果没有在研发，展示建筑信息 
-                                        if (building.researching == 0)
-                                        {
-                                            foreach (BtnBuilding btn in btnresearchs[building.id])
-                                            {
-                                                btn.gameObject.SetActive(true);
-                                            }
-                                            btncancel.GetComponentInChildren<Text>().text = "拆除";
-                                            btnconfirm.SetActive(false);
-                                            ShowBuildingInfo(gameinfo.buildingmap[building.id]);
-                                        }
-                                        else
-                                        {
-                                            // 正在研发，则展示取消按钮
-                                            int reid = building.researching;
-                                            ShowResearchInfo(gameinfo.researchmap[reid]);
-                                            btncancel.GetComponentInChildren<Text>().text = "取消";
-                                            btnconfirm.SetActive(false);
-                                        }
+                                        btn.gameObject.SetActive(false);
                                     }
-                                    else if (btnsoldiers.ContainsKey(building.id))
+                                }
+                                // 把旧的兵种按钮熄灭
+                                if (btnsoldiers.ContainsKey(oldbuilding.id))
+                                {
+                                    foreach (BtnBuilding btn in btnsoldiers[oldbuilding.id])
                                     {
-                                        // 当前是军团建筑
-                                        foreach (BtnBuilding btn in btnsoldiers[building.id])
-                                        {
-                                            btn.gameObject.SetActive(true);
-                                        }
+                                        btn.gameObject.SetActive(false);
+                                    }
+                                }
+                            }
 
-                                        if(building.producing.Count > 0)
-                                        {
-                                            // 正在招募，则展示取消
-                                            btncancel.GetComponentInChildren<Text>().text = "取消";
-                                        }
-                                        else
-                                        {
-                                            // 未在招募，则展示拆除
-                                            btncancel.GetComponentInChildren<Text>().text = "拆除";
-                                        }
-
-                                        if (gameinfo.soldiermap.ContainsKey(curbtn.soldier))
-                                        {
-                                            SoldierInfo soinfo = gameinfo.soldiermap[curbtn.soldier];
-                                            if (soinfo.building == building.id)
-                                            {
-                                                ShowSoldierInfo(soinfo);
-                                                btnconfirm.GetComponentInChildren<Text>().text = "招募";
-                                                btnconfirm.SetActive(true);
-                                            }
-                                            else
-                                            {
-                                                btnconfirm.SetActive(false);
-                                                ShowBuildingInfo(gameinfo.buildingmap[building.id]);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            ShowBuildingInfo(gameinfo.buildingmap[building.id]);
-                                            btnconfirm.SetActive(false);
-                                        }
-
+                            if (building.id == 0)
+                            {
+                                // 空地
+                                if (right == client)
+                                {
+                                    foreach (BtnBuildingType btn in btnbuildingtypes)
+                                    {
+                                        btn.gameObject.SetActive(true);
+                                    }
+                                    foreach (BtnBuilding btn in btnbuildings[curbtn.buildingtype])
+                                    {
+                                        btn.gameObject.SetActive(true);
+                                    }
+                                    if (curbtn.building != 0)
+                                    {
+                                        btncancel.SetActive(false);
+                                        btnconfirm.GetComponentInChildren<Text>().text = "建造";
+                                        btnconfirm.SetActive(true);
+                                        operationbar.SetActive(true);
+                                        ShowBuildingInfo(gameinfo.buildingmap[curbtn.building]);
                                     }
                                     else
                                     {
-                                        btncancel.GetComponentInChildren<Text>().text = "拆除";
-                                        ShowBuildingInfo(gameinfo.buildingmap[building.id]);
-                                        btnconfirm.SetActive(false);
+                                        operationbar.SetActive(false);
                                     }
                                 }
                                 else
                                 {
-                                    // 还在建造
-                                    btncancel.GetComponentInChildren<Text>().text = "取消";
-                                    ShowBuildingInfo(gameinfo.buildingmap[building.id]);
-                                    btnconfirm.SetActive(false);
+                                    foreach (BtnBuildingType btn in btnbuildingtypes)
+                                    {
+                                        btn.gameObject.SetActive(false);
+                                    }
+                                    foreach (BtnBuilding btn in btnbuildings[curbtn.buildingtype])
+                                    {
+                                        btn.gameObject.SetActive(false);
+                                    }
+                                    operationbar.SetActive(false);
                                 }
-                                btncancel.SetActive(true);
+                                progressbar.SetActive(false);
                             }
-                            else if(right != client)
+                            else
                             {
-                                // 是别人的建筑
-                                operationbar.SetActive(true);
-                                ShowEnemyBuilding(gameinfo.buildingmap[building.id]);
-                                btnconfirm.SetActive(false);
-                                btncancel.SetActive(false);
+                                // 存在建筑
+                                foreach (BtnBuildingType btn in btnbuildingtypes)
+                                {
+                                    btn.gameObject.SetActive(false);
+                                }
+                                foreach (BtnBuilding btn in btnbuildings[curbtn.buildingtype])
+                                {
+                                    btn.gameObject.SetActive(false);
+                                }
+                                if (right == client)
+                                {
+                                    // 是自己的建筑
+                                    // 已经建造完毕
+                                    operationbar.SetActive(true);
+                                    if (building.status == building.maxstatus)
+                                    {
+                                        if (btnresearchs.ContainsKey(building.id))
+                                        {
+                                            // 如果没有在研发，展示建筑信息 
+                                            if (building.researching == 0)
+                                            {
+                                                foreach (BtnBuilding btn in btnresearchs[building.id])
+                                                {
+                                                    btn.gameObject.SetActive(true);
+                                                }
+                                                btncancel.GetComponentInChildren<Text>().text = "拆除";
+                                                btnconfirm.SetActive(false);
+                                                ShowBuildingInfo(gameinfo.buildingmap[building.id]);
+                                            }
+                                            else
+                                            {
+                                                // 正在研发，则展示取消按钮
+                                                int reid = building.researching;
+                                                ShowResearchInfo(gameinfo.researchmap[reid]);
+                                                btncancel.GetComponentInChildren<Text>().text = "取消";
+                                                btnconfirm.SetActive(false);
+                                            }
+                                        }
+                                        else if (btnsoldiers.ContainsKey(building.id))
+                                        {
+                                            // 当前是军团建筑
+                                            foreach (BtnBuilding btn in btnsoldiers[building.id])
+                                            {
+                                                btn.UpdateSoProgreeText(0);
+                                                btn.gameObject.SetActive(true);
+                                            }
+                                            // 更新士兵按钮招募数字
+                                            foreach (Produce produce in building.producing)
+                                            {
+                                                int soid = produce.id;
+                                                btnsoldiermap[soid].UpdateSoProgreeText(1, 1);
+                                            }
+                                            if (building.producing.Count > 0)
+                                            {
+                                                // 正在招募，则展示取消
+                                                btncancel.GetComponentInChildren<Text>().text = "取消";
+                                            }
+                                            else
+                                            {
+                                                // 未在招募，则展示拆除
+                                                btncancel.GetComponentInChildren<Text>().text = "拆除";
+                                            }
+
+                                            if (gameinfo.soldiermap.ContainsKey(curbtn.soldier))
+                                            {
+                                                SoldierInfo soinfo = gameinfo.soldiermap[curbtn.soldier];
+                                                if (soinfo.building == building.id)
+                                                {
+                                                    ShowSoldierInfo(soinfo);
+                                                    btnconfirm.GetComponentInChildren<Text>().text = "招募";
+                                                    btnconfirm.SetActive(true);
+                                                }
+                                                else
+                                                {
+                                                    btnconfirm.SetActive(false);
+                                                    ShowBuildingInfo(gameinfo.buildingmap[building.id]);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                ShowBuildingInfo(gameinfo.buildingmap[building.id]);
+                                                btnconfirm.SetActive(false);
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            btncancel.GetComponentInChildren<Text>().text = "拆除";
+                                            ShowBuildingInfo(gameinfo.buildingmap[building.id]);
+                                            btnconfirm.SetActive(false);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // 还在建造
+                                        btncancel.GetComponentInChildren<Text>().text = "取消";
+                                        ShowBuildingInfo(gameinfo.buildingmap[building.id]);
+                                        btnconfirm.SetActive(false);
+                                    }
+                                    btncancel.SetActive(true);
+                                }
+                                else if (right != client)
+                                {
+                                    // 是别人的建筑
+                                    operationbar.SetActive(true);
+                                    ShowEnemyBuilding(gameinfo.buildingmap[building.id]);
+                                    btnconfirm.SetActive(false);
+                                    btncancel.SetActive(false);
+                                }
+                                progressbar.SetActive(true);
                             }
-                            progressbar.SetActive(true);
+
+                            if ((building.foodpoint || building.ironpoint) && right == client)
+                            {
+                                resourcebar.SetActive(true);
+                            }
+                            else
+                            {
+                                resourcebar.SetActive(false);
+                            }
+
+                            curbtn.research = 0;
+                            // curbtn.soldier = 0;
+                            curbtn.grid.set(msg.pos);
                         }
 
-                        if((building.foodpoint || building.ironpoint) && right == client)
-                        {
-                            resourcebar.SetActive(true);
-                        }
-                        else
-                        {
-                            resourcebar.SetActive(false);
-                        }
-
-                        curbtn.research = 0;
-                        // curbtn.soldier = 0;
-                        curbtn.grid.set(msg.pos);
+                        break;
                     }
-                    
-                    break;
-                case 5:
-                    // 兵种按钮
-                    curbtn.soldier = id;
-                    btncancel.GetComponentInChildren<Text>().text = "拆除";
-                    btncancel.SetActive(true);
-                    btnconfirm.GetComponentInChildren<Text>().text = "招募";
-                    btnconfirm.SetActive(true);
-                    operationbar.SetActive(true);
-                    ShowSoldierInfo(gameinfo.soldiermap[id]);
-                    break;
+                case 5: // 兵种按钮
+                    {
+                        curbtn.soldier = id;
+                        btncancel.GetComponentInChildren<Text>().text = "拆除";
+                        btncancel.SetActive(true);
+                        btnconfirm.GetComponentInChildren<Text>().text = "招募";
+                        btnconfirm.SetActive(true);
+                        operationbar.SetActive(true);
+                        ShowSoldierInfo(gameinfo.soldiermap[id]);
+                        break;
+                    }
             }
         }
     }
@@ -1137,18 +1206,18 @@ public class InfoBar : MonoBehaviour
                 btnresearchs.Add(buid, new List<BtnBuilding>());
             }
             int btnid = btnresearchs[buid].Count;
-            btnresearchs[buid].Add(null);
             BtnBuilding btnbuilding = Instantiate(btnresearch, father);
             string path = pair.Value.path;
             btnbuilding.InitR(btnid, pair.Key, this, path);
             btnresearchmap.Add(pair.Key, btnbuilding);
-            btnresearchs[buid][btnid] = btnbuilding;
+            btnresearchs[buid].Add(btnbuilding);
         }
         btnresearch.gameObject.SetActive(false);
     }
     private void initbtnsoldier()
     {
         btnsoldiers = new Dictionary<int, List<BtnBuilding>>();
+        btnsoldiermap = new Dictionary<int, BtnBuilding>();
         btnsoldiers.Add(0, new List<BtnBuilding>());
         Transform father = GameObject.Find("Background").transform;
         foreach (KeyValuePair<int, SoldierInfo> pair in gameinfo.soldiermap)
@@ -1159,10 +1228,11 @@ public class InfoBar : MonoBehaviour
                 btnsoldiers.Add(buid, new List<BtnBuilding>());
             }
             int btnid = btnsoldiers[buid].Count;
-            btnsoldiers[buid].Add(null);
-            btnsoldiers[buid][btnid] = Instantiate(btnsoldier, father);
+            BtnBuilding btnbuilding = Instantiate(btnsoldier, father);
             string path = pair.Value.path;
-            btnsoldiers[buid][btnid].InitS(btnid, pair.Key, this, path);
+            btnbuilding.InitS(btnid, pair.Key, this, path);
+            btnsoldiermap.Add(pair.Key, btnbuilding);
+            btnsoldiers[buid].Add(btnbuilding);
         }
         btnsoldier.gameObject.SetActive(false);
     }
@@ -1410,8 +1480,9 @@ public class InfoBar : MonoBehaviour
             // 必须存在招募
             if (building.producing.Count > 0)
             {
+                int soid = building.producing[building.producing.Count - 1].id;
                 // 发送取消信号
-                socket.CreateSignal(6, curbtn.grid);
+                socket.CreateSignal(6, curbtn.grid, soid);
 
                 // 收到取消信号后再取消
                 
