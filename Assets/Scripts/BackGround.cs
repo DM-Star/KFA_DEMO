@@ -96,11 +96,13 @@ public class BackGround : MonoBehaviour
         {
             for (int i = 0; i < row; i++)
             {
+                bool food = (i == 0 || i == row - 1);
+                bool iron = (i == 0);
                 for (int j = 0; j < playercolumn; j++)
                 {
                     buildings[r, i, j] = Instantiate(buildingins, transform);
                     buildings[r, i, j].Init(new Position(r, i, j),
-                        new Vector3(leftupx + j * 10 + r * (centercolumn + playercolumn) * 10, leftupy - i * 10, -1), this);
+                        new Vector3(leftupx + j * 10 + r * (centercolumn + playercolumn) * 10, leftupy - i * 10, -1), this, food, iron);
                     
                 }
             }

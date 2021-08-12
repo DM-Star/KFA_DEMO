@@ -81,6 +81,8 @@ public class InfoBar : MonoBehaviour
     private Dictionary<int, List<BtnBuilding>> btnbuildings;
     private Dictionary<int, List<BtnBuilding>> btnresearchs;
     private Dictionary<int, List<BtnBuilding>> btnsoldiers;
+    // 科技id映射到科技按钮，用于在按钮上展示科研进度
+    private Dictionary<int, BtnBuilding> btnresearchmap;
 
     private Image avatar;
     public Bar buildbar;
@@ -90,6 +92,7 @@ public class InfoBar : MonoBehaviour
 
     private GameObject operationbar;
     private GameObject progressbar;
+    private GameObject resourcebar;
     private GameObject btnconfirm;
     private GameObject btncancel;
 
@@ -108,6 +111,7 @@ public class InfoBar : MonoBehaviour
         // 处理建筑、科技状态更迭
         StatusChange();
         UpdateProgressBar();
+        ShowResourceInfo();
         ShowAvatar();
     }
     // 接收网络帧信号
@@ -527,6 +531,8 @@ public class InfoBar : MonoBehaviour
                                 }
                             }
                         }
+
+                        btnresearchmap[msg.id].UpdateProgressText();
                     }
                     break;
                 case 7:     // 中止研发
@@ -607,6 +613,7 @@ public class InfoBar : MonoBehaviour
     // operatorbar上面的各个文本组件
     private GameObject opbarname, opbardesc, opbarneed;
     public FoodIronbar opbarfoodiron;
+    public FoodIronbar rebarfoodiron;
     private GameObject[] opbarpre;
     private void ShowBuildingInfo(BuildingInfo info)
     {
@@ -811,6 +818,24 @@ public class InfoBar : MonoBehaviour
             prenum++;
         }
     }
+    private void ShowResourceInfo()
+    {
+
+        int right = curbtn.grid.right;
+        if (right != -1)
+        {
+            int row = curbtn.grid.row;
+            int col = curbtn.grid.col;
+            Player player = gameinfo.players.GetPlayer(right);
+            Building building = player.buildings[row, col];
+            if (building.id != -1)
+            {
+                int food, iron;
+                building.CheckFoodIronLeft(out food, out iron);
+                rebarfoodiron.SetNum(food, iron);
+            }
+        }
+    }
     private void BtnClicked()
     {
         // 可以进行的修改：未达到建造条件的建筑和科技不显示confirm按钮
@@ -1011,6 +1036,7 @@ public class InfoBar : MonoBehaviour
                                     }
                                     else
                                     {
+                                        btncancel.GetComponentInChildren<Text>().text = "拆除";
                                         ShowBuildingInfo(gameinfo.buildingmap[building.id]);
                                         btnconfirm.SetActive(false);
                                     }
@@ -1035,10 +1061,20 @@ public class InfoBar : MonoBehaviour
                             progressbar.SetActive(true);
                         }
 
+                        if((building.foodpoint || building.ironpoint) && right == client)
+                        {
+                            resourcebar.SetActive(true);
+                        }
+                        else
+                        {
+                            resourcebar.SetActive(false);
+                        }
+
                         curbtn.research = 0;
                         // curbtn.soldier = 0;
                         curbtn.grid.set(msg.pos);
                     }
+                    
                     break;
                 case 5:
                     // 兵种按钮
@@ -1090,6 +1126,7 @@ public class InfoBar : MonoBehaviour
     private void initbtnresearch()
     {
         btnresearchs = new Dictionary<int, List<BtnBuilding>>();
+        btnresearchmap = new Dictionary<int, BtnBuilding>();
         btnresearchs.Add(0, new List<BtnBuilding>());
         Transform father = GameObject.Find("Background").transform;
         foreach (KeyValuePair<int, ResearchInfo> pair in gameinfo.researchmap)
@@ -1101,9 +1138,11 @@ public class InfoBar : MonoBehaviour
             }
             int btnid = btnresearchs[buid].Count;
             btnresearchs[buid].Add(null);
-            btnresearchs[buid][btnid] = Instantiate(btnresearch, father);
+            BtnBuilding btnbuilding = Instantiate(btnresearch, father);
             string path = pair.Value.path;
-            btnresearchs[buid][btnid].InitR(btnid, pair.Key, this, path);
+            btnbuilding.InitR(btnid, pair.Key, this, path);
+            btnresearchmap.Add(pair.Key, btnbuilding);
+            btnresearchs[buid][btnid] = btnbuilding;
         }
         btnresearch.gameObject.SetActive(false);
     }
@@ -1145,40 +1184,54 @@ public class InfoBar : MonoBehaviour
             // 不能在已有的建筑上造新建筑
             if (target.id == 0)
             {
-                // 需要足够的资源
-                int needfood = (int)(tobuild.food * (1 + player.buildingbuff[tobuild.id].food / 100f));
-                if (player.food >= needfood)
+                if (tobuild.collect_food <= 0 || target.foodpoint)
                 {
-                    int neediron = (int)(tobuild.iron * (1 + player.buildingbuff[tobuild.id].iron / 100f));
-                    if (player.iron >= neediron)
+                    if (tobuild.collect_iron <= 0 || target.ironpoint)
                     {
-                        // 前驱科技和前驱建筑需满足
-                        int lack;
-                        if (player.HasBuildings(tobuild.pre_building, out lack))
+                        // 需要足够的资源
+                        int needfood = (int)(tobuild.food * (1 + player.buildingbuff[tobuild.id].food / 100f));
+                        if (player.food >= needfood)
                         {
-                            if (player.HasResearches(tobuild.pre_research, out lack))
+                            int neediron = (int)(tobuild.iron * (1 + player.buildingbuff[tobuild.id].iron / 100f));
+                            if (player.iron >= neediron)
                             {
-                                // 发送建造信号
-                                socket.CreateSignal(1, curbtn.grid, tobuild.id);
+                                // 前驱科技和前驱建筑需满足
+                                int lack;
+                                if (player.HasBuildings(tobuild.pre_building, out lack))
+                                {
+                                    if (player.HasResearches(tobuild.pre_research, out lack))
+                                    {
+                                        // 发送建造信号
+                                        socket.CreateSignal(1, curbtn.grid, tobuild.id);
+                                    }
+                                    else
+                                    {
+                                        Log(string.Format("请先研发：{0}", gameinfo.researchmap[lack].name));
+                                    }
+                                }
+                                else
+                                {
+                                    Log(string.Format("请先建造：{0}", gameinfo.buildingmap[lack].name));
+                                }
                             }
                             else
                             {
-                                Log(string.Format("请先研发：{0}", gameinfo.researchmap[lack].name));
+                                Log(string.Format("钢铁不够"));
                             }
                         }
                         else
                         {
-                            Log(string.Format("请先建造：{0}", gameinfo.buildingmap[lack].name));
+                            Log(string.Format("粮食不够"));
                         }
                     }
                     else
                     {
-                        Log(string.Format("钢铁不够"));
+                        Log(string.Format("{0} 必须建在矿山前", tobuild.name));
                     }
                 }
                 else
                 {
-                    Log(string.Format("粮食不够"));
+                    Log(string.Format("{0} 必须建在土壤上", tobuild.name));
                 }
             }
         }
@@ -1310,14 +1363,22 @@ public class InfoBar : MonoBehaviour
         // 目标位置上当前的状况
         Building target = gameinfo.players.GetBuilding(curbtn.grid);
         int buid = target.id;
+        BuildingInfo todebuild = gameinfo.buildingmap[buid];
         // 先判断玩家点击的建筑是不是自己的建筑
         if (right == client)
         {
             // 必须存在建筑
             if (target.id != 0)
             {
-                // 发送拆除信号
-                socket.CreateSignal(2, curbtn.grid, buid);
+                if (todebuild.type != 1 || gameinfo.players.GetCoreNum(client) > 1)
+                {
+                    // 发送拆除信号
+                    socket.CreateSignal(2, curbtn.grid, buid);
+                }
+                else
+                {
+                    Log(string.Format("你不能拆除你唯一的核心建筑"));
+                }
             }
         }
     }
@@ -1513,7 +1574,6 @@ public class InfoBar : MonoBehaviour
     }
     public void Init()
     {
-
         avatar = GameObject.Find("Background/BuildingAvatar").GetComponent<Image>();
 
         btnconfirm = GameObject.Find("InfoBar/Background/OperationBar/BtnConfirm");
@@ -1532,9 +1592,25 @@ public class InfoBar : MonoBehaviour
         opbarpre[1] = GameObject.Find("InfoBar/Background/OperationBar/Need2");
 
         progressbar = GameObject.Find("InfoBar/Background/ProgressBar");
+        resourcebar = GameObject.Find("InfoBar/Background/ResourceBar");
+
+        if(gameinfo.client == 1)
+        {
+            resourcebar.GetComponent<RectTransform>().anchorMin = new Vector2(0, 1);
+            resourcebar.GetComponent<RectTransform>().anchorMax = new Vector2(0, 1);
+            resourcebar.GetComponent<RectTransform>().pivot = new Vector2(0, 0);
+        }
+        else if(gameinfo.client == 0)
+        {
+            resourcebar.GetComponent<RectTransform>().anchorMin = new Vector2(1, 1);
+            resourcebar.GetComponent<RectTransform>().anchorMax = new Vector2(1, 1);
+            resourcebar.GetComponent<RectTransform>().pivot = new Vector2(1, 0);
+        }
+        resourcebar.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
 
         operationbar.SetActive(false);
         progressbar.SetActive(false);
+        resourcebar.SetActive(false);
         initbtnbuilding();
         initbtnresearch();
         initbtnsoldier();

@@ -271,8 +271,9 @@ public class GameInfo : MonoBehaviour
     public MainCamera maincamera;
     public int client;
     public bool start;
-    public Projection projectionins;    // 用于实例化投射物
     public SkillManager skills;
+    // 核心建筑id列表
+    public List<int> corelist;
     // Start is called before the first frame update
     void Awake()
     {
@@ -280,6 +281,7 @@ public class GameInfo : MonoBehaviour
         researchmap = new Dictionary<int, ResearchInfo>();
         soldiermap = new Dictionary<int, SoldierInfo>();
         projectionmap = new Dictionary<int, ProjectionInfo>();
+        corelist = new List<int>();
         skills = new SkillManager();
         start = false;
         coroutinenum = 100;
@@ -328,7 +330,13 @@ public class GameInfo : MonoBehaviour
                     if (System.Convert.ToInt32(mode) == gamemode)
                     {
                         int id = System.Convert.ToInt32(info[0]);
-                        buildingmap.Add(id, new BuildingInfo(info));
+                        BuildingInfo buinfo = new BuildingInfo(info);
+                        buildingmap.Add(id, buinfo);
+                        if(buinfo.type == 1)
+                        {
+                            // 核心建筑加入列表
+                            corelist.Add(id);
+                        }
                         break;
                     }
                 }
@@ -440,6 +448,7 @@ public class GameInfo : MonoBehaviour
         ReadProjectionInfo();
 
         InitBackGround();
+
         InitPlayers();  // 必须先初始化BackGround
 
         InitCvs();
@@ -447,6 +456,12 @@ public class GameInfo : MonoBehaviour
 
         InitSkills();
         InitMainCamera();
+    }
+    public void GameStart()
+    {
+        // 游戏开始，第一次Move之前
+        // 建造初始建筑
+        players.GameStart(this);
     }
     private void InitSkills()
     {

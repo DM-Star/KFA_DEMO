@@ -73,6 +73,7 @@ public class Sot : MonoBehaviour
         if (gameinfo.start && !firststart)
         {
             start = true;
+            gameinfo.GameStart();
             starttime = Time.realtimeSinceStartup;
             firststart = true;
         }
@@ -81,7 +82,19 @@ public class Sot : MonoBehaviour
         {
             if (time > starttime + framerate * frame)
             {
-                gameinfo.players.Move();
+                int loser = gameinfo.players.Move();
+                if(loser != -1)
+                {
+                    if(loser == client)
+                    {
+                        Debug.Log("你输了");
+                    }
+                    else
+                    {
+                        Debug.Log("你赢了");
+                    }
+                    start = false;
+                }
 
                 // 新建下一帧的空间
                 sigmap.Add(frame + 1, "");

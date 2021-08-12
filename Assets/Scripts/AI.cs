@@ -94,9 +94,14 @@ public class AI
                 {
                     for(int col = gameinfo.playercolumn - 1; col >= 0; col--)
                     {
-                        for(int row = 0; row < gameinfo.row; row++)
+                        for(int row = gameinfo.row - 1; row >= 0; row--)
                         {
-                            if(self.buildings[row, col].maxstatus == 0)
+                            Building building = self.buildings[row, col];
+                            int foodleft, ironleft;
+                            building.CheckFoodIronLeft(out foodleft, out ironleft);
+                            if (info.collect_food > 0 && foodleft == 0) continue;
+                            if (info.collect_iron > 0 && ironleft == 0) continue;
+                            if (building.maxstatus == 0)
                             {
                                 res = res + CreateSignal_AI(1, new Position(1, row, col), buid);
                                 Debug.Log(string.Format("【AI】开始建造：{0}  建造地点 第{1}行 第{2}列)",

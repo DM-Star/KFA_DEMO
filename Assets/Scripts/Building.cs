@@ -6,12 +6,18 @@ public class Building : MonoBehaviour
 {
     // 继承自MapGrid
     private SpriteRenderer render;
+    public SpriteRenderer border;
     private Position position;
     private BackGround background;
+    public bool foodpoint;
+    public bool ironpoint;
+    private int foodleft = 0;
+    private int ironleft = 0;
 
     void Awake()
     {
         render = GetComponent<SpriteRenderer>();
+        border.enabled = false;
         unit = null;
     }
     void OnMouseDown()
@@ -22,15 +28,16 @@ public class Building : MonoBehaviour
     {
         if (isselected)
         {
-            render.color = Color.gray;
+            // render.color = Color.gray;
+            border.enabled = true;
         }
         else
         {
-            render.color = Color.white;
+            border.enabled = false;
         }
     }
 
-    public void Init(Position gridpos, Vector3 transpos, BackGround bg)
+    public void Init(Position gridpos, Vector3 transpos, BackGround bg, bool food = false, bool iron = false)
     {
         position = gridpos;
         transform.position = transpos;
@@ -42,6 +49,17 @@ public class Building : MonoBehaviour
         maxstatus = 0;
         frame = 0;
         unit = null;
+
+        foodpoint = food;
+        ironpoint = iron;
+        if (foodpoint) foodleft = 3000;
+        if (ironpoint) ironleft = 3000;
+    }
+
+    public void CheckFoodIronLeft(out int food, out int iron)
+    {
+        food = foodleft;
+        iron = ironleft;
     }
 
     public int id;
@@ -89,7 +107,7 @@ public class Building : MonoBehaviour
                 // 建造中
                 status++;
                 float complete = (float)status / maxstatus;
-                render.color = new Color(render.color.r, render.color.g, render.color.b, 0.25f + complete / 4);
+                render.color = new Color(1, 1, 1, 0.25f + complete / 4);
                 int newmaxhp = System.Convert.ToInt32(buinfo.unitinfo.maxhp * complete);
                 int hpdelta = newmaxhp - unit.maxhp;
                 unit.ResetCD(100000000);    // 建造期间不能移动、发射
@@ -103,7 +121,7 @@ public class Building : MonoBehaviour
                     player.FinishBuild(id);
                     Position pos = new Position(player.isclient, row, col);
                     gameinfo.infobar.statuses.Enqueue(new StatusMsg(2, pos));
-                    render.color = new Color(render.color.r, render.color.g, render.color.b, 1f);
+                    render.color = new Color(1, 1, 1, 1f);
                     if (player.isclient == gameinfo.client)
                     {
                         gameinfo.canvas.ShowMsg(string.Format("{0} 建造完成。", buinfo.name));
@@ -150,15 +168,20 @@ public class Building : MonoBehaviour
                 {
                     // 必须建造完成才能进行生产
                     // 处理产粮和产铁
+                    if (foodleft < collect_food) collect_food = foodleft;
+                    if (ironleft < collect_iron) collect_iron = ironleft;
                     player.food += collect_food;
                     player.iron += collect_iron;
+                    foodleft -= collect_food;
+                    ironleft -= collect_iron;
                 }
             }
             frame++;
         }
     }
-    public void Build(int r, int c, BuildingInfo info)
+    public void Build(int r, int c, BuildingInfo info, bool finish = false)
     {
+        // finish = true 表示直接完成
         buinfo = info;
         id = buinfo.id;
         row = r;
@@ -174,9 +197,17 @@ public class Building : MonoBehaviour
         researching = 0;
         producing.Clear();
         player.units.Add(transform, unit);
-        render.color = new Color(render.color.r, render.color.g, render.color.b, 0.25f);
+        render.color = new Color(1, 1, 1, 0.25f);
         render.sprite = buinfo.sprite[player.isclient];
+
+        if (finish)
+        {
+            status = maxstatus;
+            unit.hp = unit.maxhp = buinfo.unitinfo.maxhp;
+            render.color = new Color(1, 1, 1, 1f);
+        }
     }
+
     public void DamageTip(Damage damage)
     {
         HpChangeTip hpchange = Instantiate(hpchangeins, transform.parent);
@@ -199,7 +230,7 @@ public class Building : MonoBehaviour
         while (CancelProduce() >= 1) ;
         producing.Clear();
         frame = 0;
-        render.color = new Color(render.color.r, render.color.g, render.color.b, 1f);
+        render.color = new Color(1, 1, 1, 1f);
         render.sprite = background.buildingins.GetComponent<SpriteRenderer>().sprite;
         player.units.Remove(transform);
         unit = null;

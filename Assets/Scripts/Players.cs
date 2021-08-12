@@ -34,7 +34,7 @@ public class Research
             if (status == maxstatus)
             {
                 player.FinishResearch(id);
-                gameinfo.infobar.statuses.Enqueue(new StatusMsg(6, new Position(player.isclient, row, col)));
+                gameinfo.infobar.statuses.Enqueue(new StatusMsg(6, new Position(player.isclient, row, col), id));
                 if (player.isclient == gameinfo.client)
                 {
                     gameinfo.canvas.ShowMsg(string.Format("{0} 研发完成。", gameinfo.researchmap[id].name));
@@ -97,7 +97,7 @@ public class Player
     public Dictionary<Transform, Unit> units;
 
     public Dictionary<int, Research> researches;
-    public Player(GameInfo gameinfo, int client)
+    public Player()
     {
         buildingcount = new Dictionary<int, BuildingStatus>();
         researches = new Dictionary<int, Research>();
@@ -105,7 +105,9 @@ public class Player
         buildingbuff = new Dictionary<int, Buff>();
         soldierbuff = new Dictionary<int, Buff>();
         units = new Dictionary<Transform, Unit>();
-
+    }
+    public void Init(GameInfo gameinfo, int client)
+    {
         int gamemode = gameinfo.gamemode;
         players = gameinfo.players;
         switch (gamemode)
@@ -126,21 +128,41 @@ public class Player
                     }
                 }
 
-                foreach(KeyValuePair<int, ResearchInfo> p in gameinfo.researchmap)
+                foreach (KeyValuePair<int, ResearchInfo> p in gameinfo.researchmap)
                 {
                     researches.Add(p.Key, new Research(p.Value, this));
                 }
                 break;
         }
 
-        foreach(KeyValuePair<int, BuildingInfo> pair in gameinfo.buildingmap)
+        foreach (KeyValuePair<int, BuildingInfo> pair in gameinfo.buildingmap)
         {
             buildingbuff.Add(pair.Key, new Buff(pair.Value.unitinfo));
         }
-        foreach(KeyValuePair<int, SoldierInfo> pair in gameinfo.soldiermap)
+        foreach (KeyValuePair<int, SoldierInfo> pair in gameinfo.soldiermap)
         {
             soldierbuff.Add(pair.Key, new Buff(pair.Value.unitinfo));
         }
+
+        
+    }
+    public void GameStart(GameInfo gameinfo)
+    {
+        if (isclient == 0) BuildFirst(2, 0, gameinfo.buildingmap[1]);
+        else if (isclient == 1) BuildFirst(2, gameinfo.playercolumn - 1, gameinfo.buildingmap[1]);
+    }
+    private void BuildFirst(int row, int col, BuildingInfo info)
+    {
+        Building building = buildings[row, col];
+        building.player = this;
+        int id = info.id;
+        building.Build(row, col, info, true);
+        buildingcount.Add(id, new BuildingStatus());
+        buildingcount[id].count = 1;
+        buildingcount[id].buildingcount = 0;
+        bumap.Add(id, new List<Building>());
+        bumap[id].Add(building);
+        players.units[row].Add(building.unit);
     }
     public void StartBuild(int row, int col, BuildingInfo info)
     {
@@ -220,6 +242,12 @@ public class Player
         if (building.status == building.maxstatus)
         {
             buildingcount[id].count--;
+            // 在研究的科技全部取消
+            if(building.researching != 0)
+            {
+                Research research = researches[building.researching];
+                research.status = research.maxstatus;
+            }
         }
         else
         {
@@ -452,6 +480,21 @@ public class Player
         }
         return true;
     }
+    public int GetBuildingsNum(List<int> ids)
+    {
+        int num = 0;
+        foreach(int id in ids)
+        {
+            if(id != 0)
+            {
+                if (buildingcount.ContainsKey(id))
+                {
+                    num += buildingcount[id].count;
+                }
+            }
+        }
+        return num;
+    }
     public bool HasBuildings_AI(List<int[]> prebuildings, out int lack)
     {
         // AI专用函数，判断是否拥有某座建筑或者在造某座建筑
@@ -531,20 +574,22 @@ public class Players : MonoBehaviour
     {
         gameinfo = info;
         gamemode = gameinfo.gamemode;
-        // 多人游戏时可能更多
-        players = new Player[2];
-        for(int i = 0; i < 2; i++)
-        {
-            players[i] = new Player(gameinfo, i);
-        }
         units = new List<List<Unit>>(5);
         for(int i = 0; i < 5; i++)
         {
             units.Add(new List<Unit>());
         }
-        
+
+        // 多人游戏时可能更多
+        players = new Player[2];
+        for (int i = 0; i < 2; i++)
+        {
+            players[i] = new Player();
+            players[i].Init(gameinfo, i);
+        }
     }
-    public void Move()
+    // 返回输家
+    public int Move()
     {
         for (int cl = 0; cl < 2; cl++)
         {
@@ -614,6 +659,10 @@ public class Players : MonoBehaviour
             foreach (Building building in todestroy)
             {
                 DesrtoyBuilding(building);
+                if(building.player.GetBuildingsNum(gameinfo.corelist) <= 0)
+                {
+                    return building.player.isclient;
+                }
             }
             foreach (Soldier solider in tokill)
             {
@@ -621,6 +670,8 @@ public class Players : MonoBehaviour
                 Destroy(solider.gameObject);
             }
         }
+
+        return -1;
     }
     public Building GetBuilding(Position pos)
     {
@@ -646,5 +697,17 @@ public class Players : MonoBehaviour
     {
         Player owner = building.player;
         owner.LossBuilding(building, gameinfo);
+    }
+    public int GetCoreNum(int client)
+    {
+        Player player = players[client];
+        return player.GetBuildingsNum(gameinfo.corelist);
+    }
+    public void GameStart(GameInfo gameinfo)
+    {
+        for(int i = 0; i < 2; i++)
+        {
+            players[i].GameStart(gameinfo);
+        }
     }
 }

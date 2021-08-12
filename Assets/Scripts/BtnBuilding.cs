@@ -9,6 +9,7 @@ public class BtnBuilding : MonoBehaviour
     // Start is called before the first frame update
     public Image avatar;
     public Sprite[] sprite;
+    private Text progress;
 
     // 标识按钮在按钮栏的位置，从0计数
     private int btnid;
@@ -23,11 +24,19 @@ public class BtnBuilding : MonoBehaviour
     {
         sprite = new Sprite[2];
         load = new bool[2] { false, false };
+        progress = GetComponentInChildren<Text>();
     }
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    private int relevel, remaxlevel;
+    public void UpdateProgressText()
+    {
+        relevel++;
+        progress.text = string.Format("{0}/{1}", relevel, remaxlevel);
     }
 
     IEnumerator GetTextAndSprite(string path)
@@ -107,6 +116,7 @@ public class BtnBuilding : MonoBehaviour
         transform.position = new Vector3(344 + 75 * (btnid % 6), 125 - (btnid / 6) * 75, 0);
         infobar = bar;
         type = 1;
+        progress.enabled = false;
         GetComponent<Button>().onClick.AddListener(() => { infobar.clicked.Enqueue(new ClickMsg(2, id)); });
         StartCoroutine(GetTextAndSprite(Path.Combine(Application.streamingAssetsPath, "building", path)));
         StartCoroutine(GetMirrorBuilding(Path.Combine(Application.streamingAssetsPath, "building", "mirror_" + path)));
@@ -120,6 +130,10 @@ public class BtnBuilding : MonoBehaviour
         transform.position = new Vector3(200 + 75 * (btnid % 5), 125 - (btnid / 5) * 75, 0);
         infobar = bar;
         type = 2;
+        remaxlevel = infobar.gameinfo.researchmap[id].max;
+        relevel = 0;
+        progress.text = string.Format("{0}/{1}", relevel, remaxlevel);
+        progress.enabled = true;
         GetComponent<Button>().onClick.AddListener(() => {
             infobar.clicked.Enqueue(new ClickMsg(3, id)); 
         });
@@ -134,6 +148,7 @@ public class BtnBuilding : MonoBehaviour
         transform.position = new Vector3(200 + 75 * (btnid % 5), 125 - (btnid / 5) * 75, 0);
         infobar = bar;
         type = 3;
+        progress.enabled = false;
         GetComponent<Button>().onClick.AddListener(() =>
         {
             infobar.clicked.Enqueue(new ClickMsg(5, id));
