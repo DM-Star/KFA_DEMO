@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 2560
     height: 1357
   m_ShowMode: 4
-  m_Title: Project
+  m_Title: Game
   m_RootView: {fileID: 2}
   m_MinSize: {x: 875, y: 542}
   m_MaxSize: {x: 10000, y: 10000}
@@ -122,7 +122,7 @@ MonoBehaviour:
   m_MinSize: {x: 679, y: 492}
   m_MaxSize: {x: 14002, y: 14042}
   vertical: 0
-  controlID: 61
+  controlID: 87
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -147,7 +147,7 @@ MonoBehaviour:
   m_MinSize: {x: 403, y: 492}
   m_MaxSize: {x: 10001, y: 14042}
   vertical: 1
-  controlID: 112
+  controlID: 88
 --- !u!114 &7
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -172,7 +172,7 @@ MonoBehaviour:
   m_MinSize: {x: 403, y: 221}
   m_MaxSize: {x: 8003, y: 4021}
   vertical: 0
-  controlID: 113
+  controlID: 89
 --- !u!114 &8
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -396,9 +396,9 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 7a540000
+      m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 0462ffff1e62ffff86e8ffff9ee8ffff5ce9ffff40fbffff
+      m_ExpandedIDs: 40fbffff204200003a4200004e42000054420000a4420000c4420000004300000c430000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -458,9 +458,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 1042.9347, y: 520.70465, z: -102.34633}
+    m_Target: {x: 45.27032, y: 30.560413, z: -152.0718}
     speed: 2
-    m_Value: {x: -11.532339, y: 557.91125, z: -4.21691}
+    m_Value: {x: 45.27032, y: 30.560413, z: -152.0718}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -511,9 +511,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
-    m_Target: 702.2233
+    m_Target: 80.65544
     speed: 2
-    m_Value: 91.66659
+    m_Value: 80.65544
   m_Ortho:
     m_Target: 1
     speed: 2
@@ -576,21 +576,21 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/StreamingAssets
+    - Assets/Image/BackGround
     m_Globs: []
     m_OriginalText: 
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/StreamingAssets
+  - Assets/Image/BackGround
   m_LastFoldersGridSize: -1
   m_LastProjectPath: E:\Desktop\KFA_DEMO
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 02450000
-    m_LastClickedID: 17666
+    m_SelectedIDs: f8440000
+    m_LastClickedID: 17656
     m_ExpandedIDs: 00000000ee440000f044000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -647,7 +647,7 @@ MonoBehaviour:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
     m_HadKeyboardFocusLastEvent: 1
-    m_ExpandedInstanceIDs: c6230000be5300001c780000d0430000d2430000024400000e44000000000000
+    m_ExpandedInstanceIDs: c6230000be5300001c780000d0430000d2430000024400000e4400000000000070440000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 

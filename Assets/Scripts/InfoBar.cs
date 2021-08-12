@@ -169,7 +169,9 @@ public class InfoBar : MonoBehaviour
                     statuses.Enqueue(new StatusMsg(5, pos, id));
                     if (self)
                     {
-                        Log(string.Format("开始研发：{0}，预计耗时：{1}秒。", toresearch.name, toresearch.time / 50));
+                        Log(string.Format("开始研发：{0}，预计耗时：{1}秒。", toresearch.name,
+                            (toresearch.time * (100 + player.researches[id].basebuff.time) / 100f / 50).ToString("0.0"))
+                            );
                     }
                     break;
                 }
@@ -1603,7 +1605,7 @@ public class InfoBar : MonoBehaviour
                             buildbar.gameObject.SetActive(true);
                             ResearchInfo researchinfo = gameinfo.researchmap[reid];
                             Research research = player.researches[reid];
-                            status = research.status;
+                            status = (int)research.status;
                             maxstatus = research.maxstatus;
                             buildbar.maxvalue = maxstatus;
                             buildbar.value = status;

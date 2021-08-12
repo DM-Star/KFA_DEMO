@@ -195,8 +195,9 @@ public class SkillManager
                 {
                     if (friend.id != 0)
                     {
-                        int distance = Math.Abs(friend.row - weixiuzhan.row) + Math.Abs(friend.col - weixiuzhan.col);
-                        if (distance == 1)
+                        int distancex = Math.Abs(friend.row - weixiuzhan.row);
+                        int distancey = Math.Abs(friend.col - weixiuzhan.col);
+                        if (distancex == 1 || distancey == 1)
                         {
                             Heal heal = new Heal(self, friend.unit, 50);
                             HpChange hpchange = friend.unit.RestoreHp(heal);

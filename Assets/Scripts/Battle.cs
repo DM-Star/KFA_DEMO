@@ -11,7 +11,7 @@ public class Buff
     public int maxhp;
     public int food;
     public int iron;
-    public int buildtime;
+    public int time;
     public List<string> skills;
     public Buff()
     {
@@ -23,7 +23,7 @@ public class Buff
         maxhp = 0;
         food = 0;
         iron = 0;
-        buildtime = 0;      // 未启用
+        time = 0;
         skills = new List<string>();
     }
     public Buff(UnitInfo info):this()
@@ -101,6 +101,15 @@ public class Buff
                 }
                 break;
             case 3: // 科技
+                for(int i = 0; i < info.effects.Count; i++)
+                {
+                    switch (info.effects[i])
+                    {
+                        case 1: // 加研发时间
+                            time += info.values[i];
+                            break;
+                    }
+                }
                 break;
             case 4: // 英雄
                 break;
