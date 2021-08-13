@@ -107,7 +107,7 @@ public class BackGround : MonoBehaviour
                 }
             }
         }
-        for (int i = 0; i < row; i++)
+        /*for (int i = 0; i < row; i++)
         {
             for (int j = playercolumn; j < playercolumn + centercolumn; j++)
             {
@@ -115,7 +115,7 @@ public class BackGround : MonoBehaviour
                 img.name = string.Format("blocks{0}_{1}", i, j);
                 img.transform.position = new Vector3(leftupx + 10 * j, leftupy - 10 * i, -1);
             }
-        }
+        }*/
     }
 
     public Vector3 Pos2Pix(Vector3 pos)
