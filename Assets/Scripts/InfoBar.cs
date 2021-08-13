@@ -78,12 +78,12 @@ public class InfoBar : MonoBehaviour
     // 1核心 2资源 3军团 4功能 5研发
     // 未来可能会有第六种建筑类别，很遥远
     private List<BtnBuildingType> btnbuildingtypes;
-    private Dictionary<int, List<BtnBuilding>> btnbuildings;
-    private Dictionary<int, List<BtnBuilding>> btnresearchs;
-    private Dictionary<int, List<BtnBuilding>> btnsoldiers;
+    private SortedDictionary<int, List<BtnBuilding>> btnbuildings;
+    private SortedDictionary<int, List<BtnBuilding>> btnresearchs;
+    private SortedDictionary<int, List<BtnBuilding>> btnsoldiers;
     // 科技id映射到科技按钮，用于在按钮上展示科研进度
-    private Dictionary<int, BtnBuilding> btnresearchmap;
-    private Dictionary<int, BtnBuilding> btnsoldiermap;
+    private SortedDictionary<int, BtnBuilding> btnresearchmap;
+    private SortedDictionary<int, BtnBuilding> btnsoldiermap;
 
     private Image avatar;
     public Bar buildbar;
@@ -1176,7 +1176,7 @@ public class InfoBar : MonoBehaviour
         }
         btnbuildingtype.gameObject.SetActive(false);
 
-        btnbuildings = new Dictionary<int, List<BtnBuilding>>();
+        btnbuildings = new SortedDictionary<int, List<BtnBuilding>>();
         btnbuildings.Add(0, new List<BtnBuilding>());
         foreach (KeyValuePair<int, BuildingInfo> pair in gameinfo.buildingmap)
         {
@@ -1196,8 +1196,8 @@ public class InfoBar : MonoBehaviour
     }
     private void initbtnresearch()
     {
-        btnresearchs = new Dictionary<int, List<BtnBuilding>>();
-        btnresearchmap = new Dictionary<int, BtnBuilding>();
+        btnresearchs = new SortedDictionary<int, List<BtnBuilding>>();
+        btnresearchmap = new SortedDictionary<int, BtnBuilding>();
         btnresearchs.Add(0, new List<BtnBuilding>());
         Transform father = GameObject.Find("Background").transform;
         foreach (KeyValuePair<int, ResearchInfo> pair in gameinfo.researchmap)
@@ -1218,8 +1218,8 @@ public class InfoBar : MonoBehaviour
     }
     private void initbtnsoldier()
     {
-        btnsoldiers = new Dictionary<int, List<BtnBuilding>>();
-        btnsoldiermap = new Dictionary<int, BtnBuilding>();
+        btnsoldiers = new SortedDictionary<int, List<BtnBuilding>>();
+        btnsoldiermap = new SortedDictionary<int, BtnBuilding>();
         btnsoldiers.Add(0, new List<BtnBuilding>());
         Transform father = GameObject.Find("Background").transform;
         foreach (KeyValuePair<int, SoldierInfo> pair in gameinfo.soldiermap)

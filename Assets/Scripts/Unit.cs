@@ -34,7 +34,9 @@ public class Unit:IComparable
     public UnitInfo.AttackRange attackrange;     // 攻击范围
 
     public Buff buff;       // 战斗buff
-    private Dictionary<string, int> tagdict;
+    private SortedDictionary<string, int> tagdict;
+
+    public float eyesight;
     ///////////////////////////////// 以下属性需要个性化初始化
     public Soldier soldier = null;
     public Building building = null;
@@ -65,9 +67,10 @@ public class Unit:IComparable
 
         attackspeed = unitinfo.attackspeed;
         attackrange = unitinfo.attackrange;
+        eyesight = unitinfo.eyesight;
 
         buff = new Buff();
-        tagdict = new Dictionary<string, int>();
+        tagdict = new SortedDictionary<string, int>();
     }
 
     public Unit(GameInfo gameinfo, Soldier father, int r, int cl):

@@ -37,8 +37,8 @@ public class SkillManager
     }
     public void Init()
     {
-        skilltable = new Dictionary<string, Skill>();
-        skilleventtable = new Dictionary<EVENT, List<Skill>>();
+        skilltable = new SortedDictionary<string, Skill>();
+        skilleventtable = new SortedDictionary<EVENT, List<Skill>>();
         foreach (EVENT evente in Enum.GetValues(typeof(EVENT)))
         {
             skilleventtable.Add(evente, new List<Skill>());
@@ -216,8 +216,8 @@ public class SkillManager
            });
     }
 
-    private Dictionary<string, Skill> skilltable;
-    private Dictionary<EVENT, List<Skill>> skilleventtable;
+    private SortedDictionary<string, Skill> skilltable;
+    private SortedDictionary<EVENT, List<Skill>> skilleventtable;
     private void CreateSkill(string name, List<EVENT> events, ONEXECUTE Exec, CANEXECUTE CanExec)
     {
         Skill skill = new Skill(Exec, CanExec);

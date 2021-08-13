@@ -91,21 +91,21 @@ public class Player
     public int food;
     public int iron;
     public Building[,] buildings;
-    private Dictionary<int, BuildingStatus> buildingcount;  // < 建筑编号, 建筑状态 >
+    private SortedDictionary<int, BuildingStatus> buildingcount;  // < 建筑编号, 建筑状态 >
     private Players players;
-    private Dictionary<int, List<Building>> bumap;          // < 建筑编号, 所有该建筑的坐标列表 >
-    public Dictionary<int, Buff> buildingbuff;  // 当前建筑的初始buff信息
-    public Dictionary<int, Buff> soldierbuff;   // 当前士兵的初始buff信息
+    private SortedDictionary<int, List<Building>> bumap;          // < 建筑编号, 所有该建筑的坐标列表 >
+    public SortedDictionary<int, Buff> buildingbuff;  // 当前建筑的初始buff信息
+    public SortedDictionary<int, Buff> soldierbuff;   // 当前士兵的初始buff信息
     public Dictionary<Transform, Unit> units;
 
-    public Dictionary<int, Research> researches;
+    public SortedDictionary<int, Research> researches;
     public Player()
     {
-        buildingcount = new Dictionary<int, BuildingStatus>();
-        researches = new Dictionary<int, Research>();
-        bumap = new Dictionary<int, List<Building>>();
-        buildingbuff = new Dictionary<int, Buff>();
-        soldierbuff = new Dictionary<int, Buff>();
+        buildingcount = new SortedDictionary<int, BuildingStatus>();
+        researches = new SortedDictionary<int, Research>();
+        bumap = new SortedDictionary<int, List<Building>>();
+        buildingbuff = new SortedDictionary<int, Buff>();
+        soldierbuff = new SortedDictionary<int, Buff>();
         units = new Dictionary<Transform, Unit>();
     }
     public void Init(GameInfo gameinfo, int client)
@@ -695,6 +695,8 @@ public class Players : MonoBehaviour
                 Destroy(solider.gameObject);
             }
         }
+
+        gameinfo.background.UpdateMist(players[gameinfo.client].units);
 
         return -1;
     }

@@ -51,6 +51,7 @@ public class Soldier : MonoBehaviour
     }
     private void OnDestroy()
     {
+        Debug.Log("Destroy");
         player.units.Remove(transform);
     }
 }

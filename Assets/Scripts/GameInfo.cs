@@ -172,6 +172,7 @@ public class UnitInfo
     public int id;
     public int maxhp;
     public int hp;
+    public float eyesight;
     public float speed;
     public int hitdefend;
     public int cutdefend;
@@ -210,6 +211,8 @@ public class UnitInfo
             attackspeed = Convert.ToInt32(info[24]);
             attackrange = new AttackRange(info[25]);
         }
+
+        eyesight = (float)Convert.ToDouble(info[26]);
 
         hitdefend = Convert.ToInt32(info[27]);
         cutdefend = Convert.ToInt32(info[28]);
@@ -260,10 +263,10 @@ public class GameInfo : MonoBehaviour
     // 游戏模式：0图鉴 1标准 2扩展 
     public int gamemode;
     public int row, playercolumn, centercolumn;
-    public Dictionary<int, BuildingInfo> buildingmap;
-    public Dictionary<int, ResearchInfo> researchmap;
-    public Dictionary<int, SoldierInfo> soldiermap;
-    public Dictionary<int, ProjectionInfo> projectionmap;
+    public SortedDictionary<int, BuildingInfo> buildingmap;
+    public SortedDictionary<int, ResearchInfo> researchmap;
+    public SortedDictionary<int, SoldierInfo> soldiermap;
+    public SortedDictionary<int, ProjectionInfo> projectionmap;
     public InfoBar infobar;
     public BackGround background;
     public Players players;
@@ -277,10 +280,10 @@ public class GameInfo : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        buildingmap = new Dictionary<int, BuildingInfo>();
-        researchmap = new Dictionary<int, ResearchInfo>();
-        soldiermap = new Dictionary<int, SoldierInfo>();
-        projectionmap = new Dictionary<int, ProjectionInfo>();
+        buildingmap = new SortedDictionary<int, BuildingInfo>();
+        researchmap = new SortedDictionary<int, ResearchInfo>();
+        soldiermap = new SortedDictionary<int, SoldierInfo>();
+        projectionmap = new SortedDictionary<int, ProjectionInfo>();
         corelist = new List<int>();
         skills = new SkillManager();
         start = false;
@@ -474,7 +477,7 @@ public class GameInfo : MonoBehaviour
     private void InitBackGround()
     {
         // 将来出新模式以后改为可变
-        background.Init(row, playercolumn, centercolumn);
+        background.Init(this);
     }
     private void InitPlayers()
     {

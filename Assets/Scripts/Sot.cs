@@ -19,7 +19,7 @@ public class Sot : MonoBehaviour
     private int client;
     public GameInfo gameinfo;
     public InfoBar infobar;
-    private Dictionary<int, string> sigmap;
+    private SortedDictionary<int, string> sigmap;
     private int frame = 0;
     private int flock = -1; // 表示CreateSignal正在修改flock帧
     public float framerate;   // 20毫秒一个网络帧
@@ -58,7 +58,7 @@ public class Sot : MonoBehaviour
     }
     void Awake()
     {
-        sigmap = new Dictionary<int, string>();
+        sigmap = new SortedDictionary<int, string>();
         sigmap.Add(0, "");
         btnhost.onClick.AddListener(host);
         btncon.onClick.AddListener(connect);
