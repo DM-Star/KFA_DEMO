@@ -283,10 +283,12 @@ public class Player
     }
     public void FinishResearch(int id)
     {
-        buildings[researches[id].row, researches[id].col].researching = 0;
+        Building building = buildings[researches[id].row, researches[id].col];
+        building.researching = 0;
         researches[id].level++;
         ResearchInfo reinfo = players.gameinfo.researchmap[id];
         List<int> targets;
+        List<Unit> immediate = new List<Unit>();
         for (int i = 0; i < reinfo.buffnum; i++)
         {
             ResearchInfo.BuffInfo buff = reinfo.buffinfos[i];
@@ -295,18 +297,18 @@ public class Player
                 case 1: // 建筑
                     {
                         targets = buff.targets;
-                        if (targets[0] != -1)
-                        {
-                            foreach (int target in targets)
-                            {
-                                buildingbuff[target].AddBuff(buff);
-                            }
-                        }
-                        else if (targets[0] == -1)
+                        foreach (int target in targets)
                         {
                             foreach (KeyValuePair<int, Buff> pair in buildingbuff)
                             {
-                                pair.Value.AddBuff(buff);
+                                int buid = pair.Key;
+                                if (target == -1 || buid == target) pair.Value.AddBuff(buff);
+                            }
+                            foreach (KeyValuePair<Transform, Unit> pair in units)
+                            {
+                                Unit unit = pair.Value;
+                                if (unit.type == Unit.Type.BUILDING
+                                    && (target == -1 || unit.id == target)) immediate.Add(pair.Value);
                             }
                         }
                         break;
@@ -314,47 +316,18 @@ public class Player
                 case 2: // 兵种
                     {
                         targets = buff.targets;
-                        if (targets[0] != -1)
+                        foreach (int target in targets)
                         {
-                            foreach (int target in targets)
+                            foreach(KeyValuePair<int, Buff> pair in soldierbuff)
                             {
-                                soldierbuff[target].AddBuff(buff);
-                                for (int e = 0; e < buff.effects.Count; e++)
-                                {
-                                    if (buff.effects[e] == 3)
-                                    {
-                                        // 加血上限，即时生效
-                                        foreach (KeyValuePair<Transform, Unit> pair in units)
-                                        {
-                                            Unit unit = pair.Value;
-                                            if (unit.type == Unit.Type.SOLDIER && unit.id == target)
-                                            {
-                                                unit.maxhp += buff.values[e];
-                                                unit.hp += buff.values[e];
-                                            }
-                                        }
-                                    }
-                                }
+                                int soid = pair.Key;
+                                if(target == -1 || soid == target) pair.Value.AddBuff(buff);
                             }
-                        }
-                        else if (targets[0] == -1)
-                        {
-                            foreach (KeyValuePair<int, Buff> pair in soldierbuff)
+                            foreach (KeyValuePair<Transform, Unit> pair in units)
                             {
-                                pair.Value.AddBuff(buff);
-                            }
-                            for (int e = 0; e < buff.effects.Count; e++)
-                            {
-                                if (buff.effects[e] == 3)
-                                {
-                                    // 加血上限，即时生效
-                                    foreach (KeyValuePair<Transform, Unit> pair in units)
-                                    {
-                                        Unit unit = pair.Value;
-                                        unit.maxhp += buff.values[e];
-                                        unit.hp += buff.values[e];
-                                    }
-                                }
+                                Unit unit = pair.Value;
+                                if (unit.type == Unit.Type.SOLDIER
+                                    && (target == -1 || unit.id == target)) immediate.Add(pair.Value);
                             }
                         }
                         break;
@@ -380,66 +353,76 @@ public class Player
                     }
                 case 4: // 英雄
                     break;
-                case 5: // 攻击类型
-                    break;
+                case 5: // 建筑类型
+                    {
+                        targets = buff.targets;
+                        foreach (int target in targets)
+                        {
+                            foreach (KeyValuePair<int, Buff> pair in buildingbuff)
+                            {
+                                BuildingInfo buinfo = players.gameinfo.buildingmap[pair.Key];
+                                if (target == -1 || buinfo.type == target)
+                                {
+                                    pair.Value.AddBuff(buff);
+                                }
+                            }
+                            foreach (KeyValuePair<Transform, Unit> pair in units)
+                            {
+                                Unit unit = pair.Value;
+                                if (unit.type == Unit.Type.BUILDING
+                                    && (target == -1 || unit.building.buinfo.type == target)) immediate.Add(pair.Value);
+                            }
+                        }
+                        break;
+                    }
                 case 6: // 门派
                     {
                         targets = buff.targets;
-                        if (targets[0] != -1)
-                        {
-                            foreach (int target in targets)
-                            {
-                                foreach (KeyValuePair<int, Buff> pair in soldierbuff)
-                                {
-                                    SoldierInfo soinfo = players.gameinfo.soldiermap[pair.Key];
-                                    if (soinfo.job == target)
-                                    {
-                                        pair.Value.AddBuff(buff);
-
-                                    }
-                                }
-                                for (int e = 0; e < buff.effects.Count; e++)
-                                {
-                                    if (buff.effects[e] == 3)
-                                    {
-                                        // 加血上限，即时生效
-                                        foreach (KeyValuePair<Transform, Unit> pair in units)
-                                        {
-                                            Unit unit = pair.Value;
-                                            if (unit.type == Unit.Type.SOLDIER && unit.soldier.soinfo.job == target)
-                                            {
-                                                unit.maxhp += buff.values[e];
-                                                unit.hp += buff.values[e];
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else if (targets[0] == -1)
+                        foreach (int target in targets)
                         {
                             foreach (KeyValuePair<int, Buff> pair in soldierbuff)
                             {
-                                pair.Value.AddBuff(buff);
-                            }
-                            for (int e = 0; e < buff.effects.Count; e++)
-                            {
-                                if (buff.effects[e] == 3)
+                                SoldierInfo soinfo = players.gameinfo.soldiermap[pair.Key];
+                                if (target == -1 || soinfo.job == target)
                                 {
-                                    // 加血上限，即时生效
-                                    foreach (KeyValuePair<Transform, Unit> pair in units)
-                                    {
-                                        Unit unit = pair.Value;
-                                        unit.maxhp += buff.values[e];
-                                        unit.hp += buff.values[e];
-                                    }
+                                    pair.Value.AddBuff(buff);
                                 }
+                            }
+                            foreach (KeyValuePair<Transform, Unit> pair in units)
+                            {
+                                Unit unit = pair.Value;
+                                if (unit.type == Unit.Type.SOLDIER
+                                    && (target == -1 || unit.soldier.soinfo.job == target)) immediate.Add(pair.Value);
                             }
                         }
                         break;
                     }
             }
+            for (int e = 0; e < buff.effects.Count; e++)
+            {
+                foreach (Unit unit in immediate)
+                {
+                    switch (buff.effects[e])
+                    {
+                        case 12:    // 加血上限，即时生效
+                            {
+                                unit.maxhp += buff.values[e];
+                                unit.hp += buff.values[e];
+                                if (unit.type == Unit.Type.SOLDIER) unit.soldier.SetHpBar();
+
+                                break;
+                            }
+                        case 33:    // 加技能，更新按技能找单位表
+                            {
+                                foreach (string skill in buff.skills) players.AddUnitToSkill(skill, unit);
+                                break;
+                            }
+                    }
+                }
+            }
         }
+        Debug.Log("research complete");
+        players.gameinfo.skills.TriggerSkills(building.unit, EVENT.FINISH_RESEARCH, reinfo);
     }
     public void CancelResearch(int id)
     {
@@ -585,10 +568,11 @@ public class Players : MonoBehaviour
     public GameInfo gameinfo;
     // 士兵实例
     public Soldier soldierins;
-
+    public SortedDictionary<string, List<Unit>> skillunit;
     private void Awake()
     {
         projections = new List<Projection>();
+        skillunit = new SortedDictionary<string, List<Unit>>();
     }
     // 0返回主机玩家，1返回客户端玩家
     public Player GetPlayer(int client)
@@ -683,6 +667,9 @@ public class Players : MonoBehaviour
             }
             foreach (Building building in todestroy)
             {
+                // 插入时机：建筑被敌人摧毁
+                gameinfo.skills.TriggerSkills(building.unit, EVENT.DEATH);
+                RemoveUnitFromSkill(building.unit);
                 DesrtoyBuilding(building);
                 if(building.player.GetBuildingsNum(gameinfo.corelist) <= 0)
                 {
@@ -691,7 +678,11 @@ public class Players : MonoBehaviour
             }
             foreach (Soldier solider in tokill)
             {
+                // 插入时机：士兵被敌人杀死
+                gameinfo.skills.TriggerSkills(solider.unit, EVENT.DEATH);
                 line.Remove(solider.unit);
+                solider.unit.alive = false;
+                RemoveUnitFromSkill(solider.unit);
                 Destroy(solider.gameObject);
             }
         }
@@ -699,6 +690,16 @@ public class Players : MonoBehaviour
         gameinfo.background.UpdateMist(players[gameinfo.client].units);
 
         return -1;
+    }
+    public void AddUnitToSkill(string skill, Unit unit)
+    {
+        if (!skillunit.ContainsKey(skill)) skillunit.Add(skill, new List<Unit>());
+        skillunit[skill].Add(unit);
+    }
+    private void RemoveUnitFromSkill(Unit unit)
+    {
+        foreach(string skill in unit.basebuff.skills) skillunit[skill].Remove(unit);
+        foreach (string skill in unit.buff.skills) skillunit[skill].Remove(unit);
     }
     public Building GetBuilding(Position pos)
     {

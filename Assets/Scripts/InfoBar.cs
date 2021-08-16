@@ -132,7 +132,7 @@ public class InfoBar : MonoBehaviour
                     statuses.Enqueue(new StatusMsg(1, pos, id));
                     if (self)
                     {
-                        Log(string.Format("开始建造：{0}，预计耗时：{1}秒。", tobuild.name, tobuild.time / 50));
+                        Log(string.Format("开始建造：{0}，预计耗时：{1}秒。", tobuild.name, tobuild.time / 50f));
                     }
                     break;
                 }
@@ -197,7 +197,7 @@ public class InfoBar : MonoBehaviour
                         statuses.Enqueue(new StatusMsg(8, pos, id));
                         if (self)
                         {
-                            Log(string.Format("开始招募：{0}，预计耗时：{1}秒。", toproduce.name, toproduce.time / 50));
+                            Log(string.Format("开始招募：{0}，预计耗时：{1}秒。", toproduce.name, toproduce.time / 50f));
                         }
                     }
                     else

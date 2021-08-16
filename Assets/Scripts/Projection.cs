@@ -72,7 +72,7 @@ public class Projection : MonoBehaviour
         else if (lockobj == 0)
         {
             // 不锁定目标
-            if (enemy.transform.position.x > pos.x)
+            /*if (enemy.transform.position.x > pos.x)
             {
                 dir = new Vector3(1, 0, 0);
             }
@@ -84,7 +84,9 @@ public class Projection : MonoBehaviour
             {
                 if (client == 0) dir = new Vector3(1, 0, 0);
                 else if (client == 1) dir = new Vector3(-1, 0, 0);
-            }
+            }*/
+            if (client == 0) dir = new Vector3(1, 0, 0);
+            else if (client == 1) dir = new Vector3(-1, 0, 0);
         }
 
         SetRotate();
@@ -97,19 +99,8 @@ public class Projection : MonoBehaviour
     }
     private void Damage(Unit unit)
     {
-        Damage damage = new Damage(attack, attack_type, attack_mood);
-        // 计算攻方buff
-        damage.CalDamage(self.basebuff);
-        damage.CalDamage(self.buff);
-
-        // 插入时机：造成伤害前
-        gameinfo.skills.TriggerSkills(self, EVENT.BEFORE_DAMAGE, damage);
-
-        // 目标受到伤害
-        unit.TakeDamage(damage);
-
-        // 待插入时机：造成伤害后
-
+        Damage damage = new Damage(attack, attack_type, attack_mood, self, unit);
+        damage.Do();
         hasattack.Add(unit.transform, true);
     }
     private void OnTriggerEnter2D(Collider2D collision)
@@ -154,7 +145,7 @@ public class Projection : MonoBehaviour
         if (lockobj == 1)
         {
             // 锁定目标实时计算方向
-            if (obj.hp > 0 && !hasattack.ContainsKey(obj.transform))
+            if (obj.alive && !hasattack.ContainsKey(obj.transform))
             {
                 dir = (obj.transform.position - transform.position).normalized;
             }

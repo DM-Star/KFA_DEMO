@@ -23,6 +23,7 @@ public class Unit:IComparable
 
     public int maxhp;
     public int hp;
+    public bool alive;
 
     public Projectile projectile;   // id为0表示不能攻击
     public ProjectionInfo prinfo;
@@ -34,9 +35,9 @@ public class Unit:IComparable
     public UnitInfo.AttackRange attackrange;     // 攻击范围
 
     public Buff buff;       // 战斗buff
-    private SortedDictionary<string, int> tagdict;
+    private Dictionary<string, int> tagdict;
 
-    public float eyesight;
+    public float viewr, viewx, viewy;
     ///////////////////////////////// 以下属性需要个性化初始化
     public Soldier soldier = null;
     public Building building = null;
@@ -56,6 +57,7 @@ public class Unit:IComparable
         id = unitinfo.id;
         maxhp = unitinfo.maxhp;
         hp = unitinfo.hp;
+        alive = true;
 
         projectile = unitinfo.projectile;
         if (projectile.id != 0)
@@ -67,10 +69,12 @@ public class Unit:IComparable
 
         attackspeed = unitinfo.attackspeed;
         attackrange = unitinfo.attackrange;
-        eyesight = unitinfo.eyesight;
+        viewr = unitinfo.eyesight.r;
+        viewx = unitinfo.eyesight.x;
+        viewy = unitinfo.eyesight.y;
 
         buff = new Buff();
-        tagdict = new SortedDictionary<string, int>();
+        tagdict = new Dictionary<string, int>();
     }
 
     public Unit(GameInfo gameinfo, Soldier father, int r, int cl):
@@ -78,6 +82,10 @@ public class Unit:IComparable
     {
         soldier = father;
         basebuff = players.GetPlayer(client).soldierbuff[id];
+        foreach(string skill in basebuff.skills)
+        {
+            players.AddUnitToSkill(skill, this);
+        }
         maxhp += (basebuff.maxhp + buff.maxhp);
         hp = maxhp;
         width = 5;
@@ -96,6 +104,10 @@ public class Unit:IComparable
     {
         building = father;
         basebuff = players.GetPlayer(client).buildingbuff[id];
+        foreach (string skill in basebuff.skills)
+        {
+            players.AddUnitToSkill(skill, this);
+        }
         maxhp = hp;
         width = 10;
         if (client == 0)
@@ -208,7 +220,9 @@ public class Unit:IComparable
             {
                 List<Unit> enemies = FindEnemy();
                 // 插入时机：获取攻击目标后
-                players.gameinfo.skills.TriggerSkills(this, EVENT.AFTER_CHOOSE_OBJECT, enemies);
+                players.gameinfo.skills.TriggerSkills(this, EVENT.AFTER_FIND_ENEMIES, enemies);
+                // 插入时机：发动攻击之前
+                players.gameinfo.skills.TriggerSkills(this, EVENT.BEFORE_ATTACK, enemies);
                 if (enemies.Count > 0)
                 {
                     if (projectile.lockobj == 1)
@@ -288,6 +302,9 @@ public class Unit:IComparable
     }
     public HpChange RestoreHp(Heal heal)
     {
+        // 插入时机：受到治疗前
+        skillmanager.TriggerSkills(this, EVENT.BEFORE_HEALED, heal);
+
         HpChange hpchange = new HpChange(hp, hp + heal.value);
         if(hpchange.later > maxhp)
         {
@@ -313,7 +330,12 @@ public class Unit:IComparable
         }
         return hpchange;
     }
-
+    public List<Unit> FindUnitsBySkill(string skill)
+    {
+        if (players.skillunit.ContainsKey(skill))
+            return players.skillunit[skill];
+        else return new List<Unit>();
+    }
     // 重置CD,传入cd，表明再过这么长时间才能再次移动/攻击。参数省略表示默认CD
     public void ResetCD(int cd = -1)
     {
@@ -337,6 +359,17 @@ public class Unit:IComparable
         if (tagdict.ContainsKey(tag))
         {
             tagdict[tag] += num;
+        }
+        else
+        {
+            tagdict.Add(tag, num);
+        }
+    }
+    public void SetTag(string tag, int num = 1)
+    {
+        if (tagdict.ContainsKey(tag))
+        {
+            tagdict[tag] = num;
         }
         else
         {

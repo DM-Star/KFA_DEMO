@@ -43,7 +43,7 @@ public class BackGround : MonoBehaviour
     public Projection projectionins;    // 用于实例化投射物
     public Mist mistins;        // 用于实例化战争迷雾
     private Mist[,] mists;
-    private float mistsize = 1f;
+    private float mistsize = 0.1f;
     // Start is called before the first frame update
     void Awake()
     {
@@ -114,114 +114,106 @@ public class BackGround : MonoBehaviour
         }
 
         mistins.transform.localScale = new Vector3(mistsize, mistsize, 1);
-        hmist = (int)(10 / mistsize * row);
-        wmist = (int)(10 / mistsize * (playercolumn + centercolumn));
-        mists = new Mist[hmist, wmist];
-        xmist = mistsize / 2 - centercolumn * 5;
-        ymist = -mistsize / 2 + row * 5;
+        hmist = row + 1;
+        wmist = (int)(10 / mistsize * (playercolumn + centercolumn + 1));
+        mists = new Mist[wmist, hmist];
+        xmist =  -centercolumn * 5;
+        ymist = -row * 5;
         if(info.client == 1)
         {
-            xmist -= playercolumn * 10;
+            xmist -= (playercolumn + 1) * 10;
         }
-        for(int i = 0; i < hmist; i++)
+        for(int i = 0; i < wmist; i++)
         {
-            for(int j = 0; j < wmist; j++)
+            for(int j = 0; j < hmist; j++)
             {
-                mists[i, j] = Instantiate(mistins, new Vector3(xmist + j * mistsize, ymist - i * mistsize, -2), new Quaternion(), transform);
+                Mist mist = Instantiate(mistins, new Vector3(xmist + i * mistsize, ymist + j * 30 - 30, -2), new Quaternion(), transform);
+                mist.gameObject.transform.localScale = new Vector3(1.01f, 31, 1);
+                mists[i, j] = mist;
             }
         }
 
-        /*for (int i = 0; i < row; i++)
-        {
-            for (int j = playercolumn; j < playercolumn + centercolumn; j++)
-            {
-                GameObject img = Instantiate(greyblock, transform);
-                img.name = string.Format("blocks{0}_{1}", i, j);
-                img.transform.position = new Vector3(leftupx + 10 * j, leftupy - 10 * i, -1);
-            }
-        }*/
     }
 
-    private void MistPix2Pos(Vector3 pos, out int r, out int c)
-    {
-        r = (int)((ymist - pos.y) / mistsize);
-        c = (int)((pos.x - xmist) / mistsize);
-    }
 
-    private int MistY2Posy(float y)
+    private float MistPosx2X(int x)
     {
-        return (int)((ymist - y) / mistsize);
+        return xmist + x * mistsize + mistsize / 2;
     }
-    private float MistPosy2Y(int row)
+    private int MistX2Posx(float x)
     {
-        return ymist - mistsize / 2 - row * mistsize;
+        return (int)((x - xmist) / mistsize);
     }
 
     public void UpdateMist(Dictionary<Transform, Unit> unitmap)
     {
-        SortedDictionary<int, int>[] map = new SortedDictionary<int, int>[hmist];
-        for (int i = 0; i < hmist; i++) map[i] = new SortedDictionary<int, int>();
-        int l, r, row;
+        SortedDictionary<float, float>[] map = new SortedDictionary<float, float>[wmist];
+        for (int i = 0; i < wmist; i++) map[i] = new SortedDictionary<float, float>();
         foreach (KeyValuePair<Transform, Unit> pair in unitmap)
         {
             if (pair.Value.type == Unit.Type.BUILDING
                 && pair.Value.building.status < pair.Value.building.maxstatus) continue;
             Vector3 circle = pair.Key.position;
-            float radius = pair.Value.eyesight;
-            int down = MistY2Posy(circle.y - radius);
-            int up = MistY2Posy(circle.y + radius);
-            if (up < 0) up = 0;
-            while (up <= down)
+            float radius = pair.Value.viewr;
+            float viewx = Mathf.Min(radius, pair.Value.viewx);
+            float viewy = Mathf.Min(radius, pair.Value.viewy);
+            int left = MistX2Posx(circle.x - viewx);
+            int right = MistX2Posx(circle.x + viewx);
+            if (left < 0) left = 0;
+            while (left <= right && left < wmist)
             {
-                float yup = MistPosy2Y(up);
-                float dis = yup - circle.y;
-                if (dis != 0) dis -= mistsize / 2;
-                float halfchord = Mathf.Sqrt(radius * radius - dis * dis);
-                float left = circle.x - halfchord;
-                float right = circle.x + halfchord;
-                MistPix2Pos(new Vector3(left, yup), out row, out l);
-                MistPix2Pos(new Vector3(right, yup), out row, out r);
-                if (row >= map.Length) break;
-                else
+                float dis = circle.x - MistPosx2X(left);
+                float halfchord = Mathf.Min(viewy, Mathf.Sqrt(radius * radius - dis * dis));
+                float up = circle.y + halfchord;
+                float down = circle.y - halfchord;
+                if (up - down > 0.01f)
                 {
-                    if (r >= wmist) r = wmist - 1;
-                    if (map[row].ContainsKey(l))
+                    if (map[left].ContainsKey(down))
                     {
-                        if (map[row][l] < r) map[row][l] = r;
+                        if (map[left][down] < up) map[left][down] = up;
                     }
                     else
                     {
-                        map[row].Add(l, r);
+                        map[left].Add(down, up);
                     }
                 }
-                up++;
+                left++;
             }
         }
 
-        row = 0;
-        foreach(SortedDictionary<int, int> intervals in map)
+        int col = 0;
+        foreach(SortedDictionary<float, float> intervals in map)
         {
-            int cur = 0;
+            float down = ymist - 5, up = ymist + row * 10 + 10;  // 当前迷雾条的起始点和终点
+            int index = 0;  // 当前迷雾条的编号
+            Mist mist = null;
             foreach (var interval in intervals)
             {
-                if (interval.Value < cur) continue;
-                while (cur < interval.Key)
+                if (interval.Value <= down) continue;
+                if(interval.Key > down)
                 {
-                    mists[row, cur].gameObject.SetActive(true);
-                    cur++;
+                    mist = mists[col, index];
+                    mist.gameObject.SetActive(true);
+                    mist.transform.localScale = new Vector3(mist.transform.localScale.x, (interval.Key - down), 1);
+                    mist.transform.localPosition = new Vector3(mist.transform.localPosition.x, down, -2);
+                    index++;
                 }
-                while (cur <= interval.Value)
-                {
-                    mists[row, cur].gameObject.SetActive(false);
-                    cur++;
-                }
+                down = interval.Value;
             }
-            while (cur < wmist)
+            if(down < up)
             {
-                mists[row, cur].gameObject.SetActive(true);
-                cur++;
+                mist = mists[col, index];
+                mist.gameObject.SetActive(true);
+                mist.transform.localScale = new Vector3(mist.transform.localScale.x, (up - down), 1);
+                mist.transform.localPosition = new Vector3(mist.transform.localPosition.x, down, -2);
+                index++;
             }
-            row++;
+            while(index < hmist)
+            {
+                mists[col, index].gameObject.SetActive(false);
+                index++;
+            }
+            col++;
         }
     }
 

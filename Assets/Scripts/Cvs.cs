@@ -52,6 +52,7 @@ public class Cvs : MonoBehaviour
         leftarrow.onClick.AddListener(ViewLeft);
         rightarrow.onClick.AddListener(ViewRight);
         player = gameinfo.players.GetPlayer(gameinfo.client);
+        Adapt();
     }
     private void ViewLeft()
     {

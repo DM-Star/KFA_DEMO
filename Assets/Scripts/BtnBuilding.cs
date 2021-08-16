@@ -26,6 +26,8 @@ public class BtnBuilding : MonoBehaviour
         load = new bool[2] { false, false };
         progress = GetComponentInChildren<Text>();
         progress.text = "";
+        avatar.enabled = false;
+        progress.enabled = false;
     }
     // Update is called once per frame
     void Update()
@@ -87,6 +89,8 @@ public class BtnBuilding : MonoBehaviour
                     gameObject.SetActive(false);
                     // ±øÖÖ
                 }
+                avatar.enabled = true;
+                progress.enabled = true;
             }
             uwr.Dispose();
             infobar.gameinfo.coroutinenum--;

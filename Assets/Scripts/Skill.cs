@@ -35,8 +35,11 @@ public class SkillManager
            }
            );
     }
-    public void Init()
+    private GameInfo gameinfo;
+    public void Init(GameInfo info)
     {
+        gameinfo = info;
+
         skilltable = new SortedDictionary<string, Skill>();
         skilleventtable = new SortedDictionary<EVENT, List<Skill>>();
         foreach (EVENT evente in Enum.GetValues(typeof(EVENT)))
@@ -55,7 +58,7 @@ public class SkillManager
                    Damage damage = data as Damage;
                    if (self.TagNum("tonggui") > 0)
                    {
-                       damage.commondamage = (int)(damage.commondamage * 1.5);
+                       damage.delta = (int)(damage.commondamage * 0.5);
                    }
                }
                else if (evente == EVENT.HPCHANGE)
@@ -111,7 +114,7 @@ public class SkillManager
         // 飞花剑法：斜着攻击敌人
         CreateSkill(
            "feihua",
-           new List<EVENT> { EVENT.AFTER_CHOOSE_OBJECT },
+           new List<EVENT> { EVENT.AFTER_FIND_ENEMIES },
            (Unit self, EVENT evente, object data) =>
            {
                List<Unit> enemies = data as List<Unit>;
@@ -125,8 +128,8 @@ public class SkillManager
                    // 朝右走
                    right = 1;
                }
-               float lself = self.transform.position.x + (-7) * right;
-               float rself = self.transform.position.x + 7 * right;
+               float lself = self.transform.position.x - 7;
+               float rself = self.transform.position.x + 7;
 
                // 往上找一个敌人
                for (int i = 0; i <= 10; i++)
@@ -143,8 +146,8 @@ public class SkillManager
                                && (obj.transform.position.x - self.transform.position.x) * right > 0
                                )
                                {
-                                   Projection proup = self.players.gameinfo.background.InsProjection();
-                                   Projection prodown = self.players.gameinfo.background.InsProjection();
+                                   Projection proup = gameinfo.background.InsProjection();
+                                   Projection prodown = gameinfo.background.InsProjection();
                                    proup.Init(self.prinfo, 
                                        self.projectile, 
                                        self.transform.localPosition, 
@@ -180,10 +183,10 @@ public class SkillManager
            }
            );
 
-        // 维修：每秒钟为相邻的友方建筑回复50点生命值
+        // 维修：建筑每秒钟为相邻的友方建筑回复50点生命值
         CreateSkill(
             "weixiu",
-            new List<EVENT> { EVENT.AFTER_CHOOSE_OBJECT },
+            new List<EVENT> { EVENT.AFTER_FIND_ENEMIES },
             (Unit self, EVENT evente, object data) =>
             {
                 List<Unit> enemies = data as List<Unit>;
@@ -197,7 +200,7 @@ public class SkillManager
                     {
                         int distancex = Math.Abs(friend.row - weixiuzhan.row);
                         int distancey = Math.Abs(friend.col - weixiuzhan.col);
-                        if (distancex == 1 || distancey == 1)
+                        if ((distancex | distancey) == 1)
                         {
                             Heal heal = new Heal(self, friend.unit, 50);
                             HpChange hpchange = friend.unit.RestoreHp(heal);
@@ -212,8 +215,309 @@ public class SkillManager
             },
            (Unit self, object data) =>
            {
-               return self.HasSkill("weixiu") && self.type == Unit.Type.BUILDING;
+               return self.HasSkill("weixiu") 
+               && self.type == Unit.Type.BUILDING
+               && self.building.status >= self.building.maxstatus;
            });
+
+        // 反伤：每次建筑受到近战伤害，立即对伤害来源造成5点兵刃伤害
+        CreateSkill(
+           "fanshang",
+           new List<EVENT> { EVENT.AFTER_DAMAGED },
+           
+           (Unit self, EVENT evente, object data) =>
+           {
+               Damage damage = data as Damage;
+               Damage fanshang = new Damage(5, 2, 4, self, damage.from, "fanshang");
+               fanshang.Do();
+               return;
+           },
+           
+           (Unit self, object data) =>
+           {
+               Damage damage = data as Damage;
+               // 反伤不能反反伤的伤害
+               return self.HasSkill("fanshang") 
+               && damage.attack_mode == 4
+               && self.type == Unit.Type.BUILDING
+               && self.building.status >= self.building.maxstatus
+               && damage.skill != "fanshang";
+           }
+           );
+
+        // 万箭：建筑死亡时向3*3范围内所有敌人发射箭矢，造成10点兵刃伤害
+        CreateSkill(
+           "wanjian",
+           new List<EVENT> { EVENT.DEATH },
+           (Unit self, EVENT evente, object data) =>
+           {
+               List<List<Unit>> units = self.players.units;
+               for (int row = self.row - 1; row <= self.row + 1; row++)
+               {
+                   if (row >= 0 && row < units.Count)
+                   {
+                       foreach (Unit obj in units[row])
+                       {
+                           if(self.client != obj.client)
+                           {
+                               if (Math.Abs(obj.transform.position.x - self.transform.position.x) <= 18)
+                               {
+                                   Projection projection = gameinfo.background.InsProjection();
+                                   projection.Init(gameinfo.projectionmap[2],
+                                       new Projectile("0|1|2|3|4|5|6|7|8|9|10|11|12|13|2|2|4|1|20|1|999|0|1|10".Split('|')),
+                                       self.transform.localPosition,
+                                       self.client,
+                                       self,
+                                       obj,
+                                       obj.players);
+                                   self.players.projections.Add(projection);
+                               }
+                           }
+                       }
+                   }
+               }
+               return;
+           },
+           (Unit self, object data) =>
+           {
+               return self.HasSkill("wanjian")
+               && self.type == Unit.Type.BUILDING
+               && self.building.status >= self.building.maxstatus;
+           }
+           );
+
+        // 安全：建造期间减伤90%
+        CreateSkill(
+           "anquan",
+           new List<EVENT> { EVENT.BEFORE_DAMAGED },
+
+           (Unit self, EVENT evente, object data) =>
+           {
+               Damage damage = data as Damage;
+               damage.delta -= (int)(damage.commondamage * 0.9);
+               return;
+           },
+
+           (Unit self, object data) =>
+           {
+               Damage damage = data as Damage;
+               return self.HasSkill("anquan")
+               && self.type == Unit.Type.BUILDING
+               && self.building.status < self.building.maxstatus;
+           }
+           );
+
+        // 铁卫：嘲讽敌人
+        CreateSkill(
+          "tiewei",
+          new List<EVENT> { EVENT.BEFORE_ATTACK },
+
+          (Unit self, EVENT evente, object data) =>
+          {
+              List<Unit> enemies = data as List<Unit>;
+              int count = 0;
+              // 先将所有可以攻击到的具有嘲讽的敌人加入队列
+              foreach(Unit tiewei in self.FindUnitsBySkill("tiewei"))
+              {
+                  if (self.CanAttack(tiewei) && !enemies.Contains(tiewei))
+                  {
+                      enemies.Add(tiewei);
+                      count++;
+                  }
+              }
+              // 然后剔除不具有嘲讽的多余的敌人
+              List<Unit> todelete = new List<Unit>();
+              for(int i = enemies.Count - 1; i >= 0 && count > 0; i--)
+              {
+                  Unit enemy = enemies[i];
+                  if (!enemy.HasSkill("tiewei"))
+                  {
+                      enemies.RemoveAt(i);
+                      count--;
+                  }
+              }
+              // 再剔除具有嘲讽的多余的敌人
+              enemies.RemoveRange(enemies.Count - count, count);
+              return;
+          },
+
+          (Unit self, object data) =>
+          {
+              return self.projectile.lockobj == 1 && self.FindUnitsBySkill("tiewei").Count > 0;
+          }
+          );
+
+        // 神射：优先进攻生命值最低的敌人
+        CreateSkill(
+          "shenshe",
+          new List<EVENT> { EVENT.AFTER_FIND_ENEMIES },
+
+          (Unit self, EVENT evente, object data) =>
+          {
+              List<Unit> enemies = data as List<Unit>;
+              if (enemies.Count == 0) return;
+              Unit target = enemies[0];
+              int hp = 1000000;
+              foreach(Unit enemy in enemies)
+              {
+                  if(enemy.type == Unit.Type.SOLDIER && enemy.hp < hp)
+                  {
+                      hp = enemy.hp;
+                      target = enemy;
+                  }
+              }
+              enemies.Clear();
+              if (target != null) enemies.Add(target);
+              return;
+          },
+
+          (Unit self, object data) =>
+          {
+              return self.HasSkill("shenshe");
+          }
+          );
+
+        // 破坏：对建筑造成伤害后，增加一个pohuai标记
+        CreateSkill(
+          "pohuai",
+          new List<EVENT> { EVENT.AFTER_DAMAGE },
+
+          (Unit self, EVENT evente, object data) =>
+          {
+              Damage damage = data as Damage;
+              damage.to.SetTag("pohuai", gameinfo.GetFrame());
+              return;
+          },
+
+          (Unit self, object data) =>
+          {
+              Damage damage = data as Damage;
+              return self.HasSkill("pohuai") && damage.to.type == Unit.Type.BUILDING;
+          }
+          );
+
+        // 破坏衍生技：具有pohuai标记的单位在标记后的2秒内治疗量降低80%
+        CreateSkill(
+          "pohuai2",
+          new List<EVENT> { EVENT.BEFORE_HEALED },
+
+          (Unit self, EVENT evente, object data) =>
+          {
+              Heal heal = data as Heal;
+              heal.value /= 5; 
+              return;
+          },
+
+          (Unit self, object data) =>
+          {
+              int frame = self.TagNum("pohuai");
+              return frame > 0 && gameinfo.GetFrame() - frame <= 100;
+          }
+          );
+
+        // 投石：对建筑造成双倍伤害
+        CreateSkill(
+          "toushi",
+          new List<EVENT> { EVENT.BEFORE_DAMAGE },
+
+          (Unit self, EVENT evente, object data) =>
+          {
+              Damage damage = data as Damage;
+              damage.delta += damage.commondamage;
+              return;
+          },
+
+          (Unit self, object data) =>
+          {
+              Damage damage = data as Damage;
+              return self.HasSkill("toushi") && damage.to.type == Unit.Type.BUILDING;
+          }
+          );
+
+        // 浸毒：造成最大生命值10%的伤害
+        CreateSkill(
+          "jindu",
+          new List<EVENT> { EVENT.BEFORE_DAMAGE },
+
+          (Unit self, EVENT evente, object data) =>
+          {
+              Damage damage = data as Damage;
+              damage.AddRealDamage(damage.to.maxhp / 10);
+              return;
+          },
+
+          (Unit self, object data) =>
+          {
+              Damage damage = data as Damage;
+              return self.HasSkill("jindu") && damage.to.type == Unit.Type.SOLDIER;
+          }
+          );
+
+        // 掘地：允许在任何地方建造矿场
+        CreateSkill(
+          "juedi",
+          new List<EVENT> { EVENT.FINISH_RESEARCH },
+
+          (Unit self, EVENT evente, object data) =>
+          {
+              Building[,] buildings = self.players.GetPlayer(self.client).buildings;
+              foreach(Building building in buildings)
+              {
+                  if (!building.ironpoint)
+                  {
+                      building.ironpoint = true;
+                      building.ironleft = 1000;
+                  }
+              }
+              return;
+          },
+
+          (Unit self, object data) =>
+          {
+              ResearchInfo reinfo = data as ResearchInfo;
+              if (self.HasSkill("juedi"))
+              {
+                  foreach (ResearchInfo.BuffInfo buff in reinfo.buffinfos)
+                  {
+                      if (buff.skills.Contains("juedi")) return true;
+                  }
+              }
+              return false;
+          }
+          );
+
+        // 农改：允许在任何地方建造农场
+        CreateSkill(
+          "nonggai",
+          new List<EVENT> { EVENT.FINISH_RESEARCH },
+
+          (Unit self, EVENT evente, object data) =>
+          {
+              Building[,] buildings = self.players.GetPlayer(self.client).buildings;
+              foreach (Building building in buildings)
+              {
+                  if (!building.foodpoint)
+                  {
+                      building.foodpoint = true;
+                      building.foodleft = 1000;
+                  }
+              }
+              return;
+          },
+
+          (Unit self, object data) =>
+          {
+              ResearchInfo reinfo = data as ResearchInfo;
+              if (self.HasSkill("nonggai"))
+              {
+                  foreach (ResearchInfo.BuffInfo buff in reinfo.buffinfos)
+                  {
+                      if (buff.skills.Contains("nonggai")) return true;
+                  }
+              }
+              return false;
+          }
+          );
     }
 
     private SortedDictionary<string, Skill> skilltable;
@@ -229,7 +533,7 @@ public class SkillManager
         }
     }
     public Skill GetSkill(string name) { return skilltable[name]; }
-    public void TriggerSkills(Unit self, EVENT evente, object data)
+    public void TriggerSkills(Unit self, EVENT evente, object data = null)
     {
         foreach (Skill skill in skilleventtable[evente])
         {
@@ -251,10 +555,20 @@ public enum EVENT
     BEFORE_DAMAGED,
     // 生命值改变后，self是生命值改变的人，data是HpChange结构体
     HPCHANGE,
-    // 受到伤害后，self是受到伤害的人，data是Damafe结构体
+    // 受到伤害后，self是受到伤害的人，data是Damage结构体
     AFTER_DAMAGED,
-    // 选取攻击目标后，self是准备发动攻击的人，data是List<Unit>，表示所有敌人的列表
-    AFTER_CHOOSE_OBJECT
+    // 造成伤害后，self是造成伤害的人，data是Damage结构体
+    AFTER_DAMAGE,
+    // 获取敌人列表后，self是准备发动攻击的人，data是List<Unit>，表示所有敌人的列表
+    AFTER_FIND_ENEMIES,
+    // 获取敌人列表后，准备对敌人发动攻击之前，self是准备发动攻击的人，data是List<Unit>，表示所有敌人的列表
+    BEFORE_ATTACK,
+    // 受到治疗之前，self是受到治疗的人，data 是Heal结构体
+    BEFORE_HEALED,
+    // 死亡时
+    DEATH,
+    // 研发完成后，self是完成研发的建筑，data是RerearchInfo
+    FINISH_RESEARCH
 }
 public class Skill
 {

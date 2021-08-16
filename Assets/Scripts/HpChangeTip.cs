@@ -10,7 +10,7 @@ public class HpChangeTip : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        word.GetComponent<MeshRenderer>().sortingOrder = 3;
+        word.GetComponent<MeshRenderer>().sortingOrder = 5;
     }
 
     public void Init(Damage damage, Vector3 position)

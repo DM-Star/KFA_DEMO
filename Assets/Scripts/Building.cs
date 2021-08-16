@@ -11,8 +11,8 @@ public class Building : MonoBehaviour
     private BackGround background;
     public bool foodpoint;
     public bool ironpoint;
-    private int foodleft = 0;
-    private int ironleft = 0;
+    public int foodleft = 0;
+    public int ironleft = 0;
 
     void Awake()
     {
@@ -234,6 +234,7 @@ public class Building : MonoBehaviour
         render.color = new Color(1, 1, 1, 1f);
         render.sprite = background.buildingins.GetComponent<SpriteRenderer>().sprite;
         player.units.Remove(transform);
+        unit.alive = false;
         unit = null;
     }
 }

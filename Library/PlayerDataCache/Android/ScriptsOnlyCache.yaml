@@ -76,6 +76,7 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 1580}
     - Class: 114
+<<<<<<< Updated upstream
       Script: {instanceID: 1868}
     - Class: 114
       Script: {instanceID: 2270}
@@ -125,6 +126,55 @@ ScriptsOnlyBuild:
       Script: {instanceID: 5426}
     - Class: 114
       Script: {instanceID: 17470}
+=======
+      Script: {instanceID: 1864}
+    - Class: 114
+      Script: {instanceID: 2266}
+    - Class: 114
+      Script: {instanceID: 2326}
+    - Class: 114
+      Script: {instanceID: 2646}
+    - Class: 114
+      Script: {instanceID: 2742}
+    - Class: 114
+      Script: {instanceID: 2762}
+    - Class: 114
+      Script: {instanceID: 2904}
+    - Class: 114
+      Script: {instanceID: 2908}
+    - Class: 114
+      Script: {instanceID: 3002}
+    - Class: 114
+      Script: {instanceID: 3124}
+    - Class: 114
+      Script: {instanceID: 3180}
+    - Class: 114
+      Script: {instanceID: 3366}
+    - Class: 114
+      Script: {instanceID: 3478}
+    - Class: 114
+      Script: {instanceID: 3482}
+    - Class: 114
+      Script: {instanceID: 3688}
+    - Class: 114
+      Script: {instanceID: 4006}
+    - Class: 114
+      Script: {instanceID: 4102}
+    - Class: 114
+      Script: {instanceID: 4446}
+    - Class: 114
+      Script: {instanceID: 4580}
+    - Class: 114
+      Script: {instanceID: 5032}
+    - Class: 114
+      Script: {instanceID: 5074}
+    - Class: 114
+      Script: {instanceID: 5196}
+    - Class: 114
+      Script: {instanceID: 5210}
+    - Class: 114
+      Script: {instanceID: 5422}
+>>>>>>> Stashed changes
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -724,7 +774,7 @@ ScriptsOnlyBuild:
     className: TMP_ScrollbarEventHandler
   - hash:
       serializedVersion: 2
-      Hash: 702c6d6450df1203e78b47bc3f7ff583
+      Hash: 9cf9d4172fa942beef1e4326510afec2
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Building
@@ -767,4 +817,4 @@ ScriptsOnlyBuild:
   platform: 13
   scenePathNames:
   - Assets/Scenes/Battle.unity
-  playerPath: E:/Desktop/KFADEMO.apk
+  playerPath: C:/Users/39824/Desktop/kongfu.apk

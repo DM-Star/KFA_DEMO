@@ -35,6 +35,8 @@ public class Sot : MonoBehaviour
         int i = c - 'A';
         return i;
     }
+
+    public int GetFrame() { return frame; }
     public void CreateSignal(int type, Position pos, int id = 0)
     {
         // type指明信号类型
@@ -58,6 +60,7 @@ public class Sot : MonoBehaviour
     }
     void Awake()
     {
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
         sigmap = new SortedDictionary<int, string>();
         sigmap.Add(0, "");
         btnhost.onClick.AddListener(host);

@@ -172,7 +172,7 @@ public class UnitInfo
     public int id;
     public int maxhp;
     public int hp;
-    public float eyesight;
+    public EyeSight eyesight;
     public float speed;
     public int hitdefend;
     public int cutdefend;
@@ -181,6 +181,17 @@ public class UnitInfo
     public int rangeddefend;
     public int attackspeed;
     public List<string> skills;
+    public struct EyeSight
+    {
+        public float r, x, y;
+        public EyeSight(string info)
+        {
+            string[] str = info.Split('|');
+            r = (float)Convert.ToDouble(str[0]);
+            x = (float)Convert.ToDouble(str[1]);
+            y = (float)Convert.ToDouble(str[2]);
+        }
+    }
     public struct AttackRange
     {
         public float back;
@@ -212,7 +223,7 @@ public class UnitInfo
             attackrange = new AttackRange(info[25]);
         }
 
-        eyesight = (float)Convert.ToDouble(info[26]);
+        eyesight = new EyeSight(info[26]);
 
         hitdefend = Convert.ToInt32(info[27]);
         cutdefend = Convert.ToInt32(info[28]);
@@ -302,6 +313,7 @@ public class GameInfo : MonoBehaviour
             canvas.Adapt();
         }
     }
+    public int GetFrame() { return infobar.socket.GetFrame(); }
 
     string ReadFile(string path)
     {
@@ -468,7 +480,7 @@ public class GameInfo : MonoBehaviour
     }
     private void InitSkills()
     {
-        skills.Init();
+        skills.Init(this);
     }
     private void InitInfoBar()
     {
