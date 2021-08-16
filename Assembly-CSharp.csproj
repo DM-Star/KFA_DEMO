@@ -2,9 +2,13 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <LangVersion>latest</LangVersion>
     <CscToolPath>E:\Unity\2020.3.13f1c1\Editor\Data\Tools\RoslynScripts</CscToolPath>
     <CscToolExe>unity_csc.bat</CscToolExe>
+=======
+    <LangVersion>8.0</LangVersion>
+>>>>>>> Stashed changes
 =======
     <LangVersion>8.0</LangVersion>
 >>>>>>> Stashed changes
