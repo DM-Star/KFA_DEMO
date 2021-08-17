@@ -54,6 +54,13 @@ public class Cvs : MonoBehaviour
         player = gameinfo.players.GetPlayer(gameinfo.client);
         Adapt();
     }
+    public void GameOver()
+    {
+        GetComponent<CanvasScaler>().scaleFactor = 1;
+        tips = new Queue<Tip>();
+        msgs = new Queue<string>();
+        gameObject.SetActive(false);
+    }
     private void ViewLeft()
     {
         maincamera.rightview = false;

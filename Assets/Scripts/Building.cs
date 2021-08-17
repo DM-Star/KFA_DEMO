@@ -128,7 +128,7 @@ public class Building : MonoBehaviour
                     }
                     else
                     {
-                        Debug.Log(string.Format("【对手】建造完成:{0}  [{1}, {2}]", buinfo.name, row, col));
+                        // Debug.Log(string.Format("【对手】建造完成:{0}  [{1}, {2}]", buinfo.name, row, col));
                     }
                     unit.ResetCD(0);  // 建造完成可以移动、发射
                 }
@@ -212,12 +212,12 @@ public class Building : MonoBehaviour
     public void DamageTip(Damage damage)
     {
         HpChangeTip hpchange = Instantiate(hpchangeins, transform.parent);
-        hpchange.Init(damage, transform.localPosition + new Vector3(-5, 0, 0));
+        hpchange.Init(damage, transform.localPosition);
     }
     public void HealTip(Heal heal)
     {
         HpChangeTip hpchange = Instantiate(hpchangeins, transform.parent);
-        hpchange.Init(heal, transform.localPosition + new Vector3(-5, 0, 0));
+        hpchange.Init(heal, transform.localPosition);
     }
     public void Destroy()
     {

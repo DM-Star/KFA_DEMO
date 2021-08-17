@@ -22,6 +22,7 @@ ScriptsOnlyBuild:
     - UnityEditor.U2D.Animation.BoneGizmo
     Unity.2D.IK.Editor.dll:
     - UnityEditor.U2D.IK.IKEditorManager
+    - UnityEditor.U2D.IK.IKGizmos
     Unity.2D.IK.Runtime.dll:
     - UnityEditor.U2D.IK.IKEditorManagerHelper
     Unity.2D.Tilemap.Editor.dll:
@@ -76,58 +77,6 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 1580}
     - Class: 114
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-      Script: {instanceID: 1868}
-    - Class: 114
-      Script: {instanceID: 2270}
-    - Class: 114
-      Script: {instanceID: 2330}
-    - Class: 114
-      Script: {instanceID: 2650}
-    - Class: 114
-      Script: {instanceID: 2746}
-    - Class: 114
-      Script: {instanceID: 2766}
-    - Class: 114
-      Script: {instanceID: 2908}
-    - Class: 114
-      Script: {instanceID: 2912}
-    - Class: 114
-      Script: {instanceID: 3006}
-    - Class: 114
-      Script: {instanceID: 3128}
-    - Class: 114
-      Script: {instanceID: 3184}
-    - Class: 114
-      Script: {instanceID: 3370}
-    - Class: 114
-      Script: {instanceID: 3482}
-    - Class: 114
-      Script: {instanceID: 3486}
-    - Class: 114
-      Script: {instanceID: 3692}
-    - Class: 114
-      Script: {instanceID: 4010}
-    - Class: 114
-      Script: {instanceID: 4106}
-    - Class: 114
-      Script: {instanceID: 4450}
-    - Class: 114
-      Script: {instanceID: 4584}
-    - Class: 114
-      Script: {instanceID: 5036}
-    - Class: 114
-      Script: {instanceID: 5078}
-    - Class: 114
-      Script: {instanceID: 5200}
-    - Class: 114
-      Script: {instanceID: 5214}
-    - Class: 114
-      Script: {instanceID: 5426}
-    - Class: 114
-      Script: {instanceID: 17470}
-=======
       Script: {instanceID: 1864}
     - Class: 114
       Script: {instanceID: 2266}
@@ -175,56 +124,6 @@ ScriptsOnlyBuild:
       Script: {instanceID: 5210}
     - Class: 114
       Script: {instanceID: 5422}
->>>>>>> Stashed changes
-=======
-      Script: {instanceID: 1864}
-    - Class: 114
-      Script: {instanceID: 2266}
-    - Class: 114
-      Script: {instanceID: 2326}
-    - Class: 114
-      Script: {instanceID: 2646}
-    - Class: 114
-      Script: {instanceID: 2742}
-    - Class: 114
-      Script: {instanceID: 2762}
-    - Class: 114
-      Script: {instanceID: 2904}
-    - Class: 114
-      Script: {instanceID: 2908}
-    - Class: 114
-      Script: {instanceID: 3002}
-    - Class: 114
-      Script: {instanceID: 3124}
-    - Class: 114
-      Script: {instanceID: 3180}
-    - Class: 114
-      Script: {instanceID: 3366}
-    - Class: 114
-      Script: {instanceID: 3478}
-    - Class: 114
-      Script: {instanceID: 3482}
-    - Class: 114
-      Script: {instanceID: 3688}
-    - Class: 114
-      Script: {instanceID: 4006}
-    - Class: 114
-      Script: {instanceID: 4102}
-    - Class: 114
-      Script: {instanceID: 4446}
-    - Class: 114
-      Script: {instanceID: 4580}
-    - Class: 114
-      Script: {instanceID: 5032}
-    - Class: 114
-      Script: {instanceID: 5074}
-    - Class: 114
-      Script: {instanceID: 5196}
-    - Class: 114
-      Script: {instanceID: 5210}
-    - Class: 114
-      Script: {instanceID: 5422}
->>>>>>> Stashed changes
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -446,7 +345,7 @@ ScriptsOnlyBuild:
     className: TextMeshProUGUI
   - hash:
       serializedVersion: 2
-      Hash: b0dbc4a3b1b3696e108ca2bb580126f5
+      Hash: 491bb93d7dbf6252065bf74db179e0d5
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Sot
@@ -867,4 +766,4 @@ ScriptsOnlyBuild:
   platform: 13
   scenePathNames:
   - Assets/Scenes/Battle.unity
-  playerPath: C:/Users/39824/Desktop/kongfu.apk
+  playerPath: E:/Desktop/KFADEMO.apk

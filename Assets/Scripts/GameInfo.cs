@@ -503,4 +503,21 @@ public class GameInfo : MonoBehaviour
     {
         maincamera.Init(37, -12, 12, -6, client);
     }
+
+    public void GameOver()
+    {
+        maincamera.GameOver();
+        infobar.GameOver();
+        canvas.GameOver();
+        players.GameOver();
+        background.GameOver();
+        buildingmap = new SortedDictionary<int, BuildingInfo>();
+        researchmap = new SortedDictionary<int, ResearchInfo>();
+        soldiermap = new SortedDictionary<int, SoldierInfo>();
+        projectionmap = new SortedDictionary<int, ProjectionInfo>();
+        corelist = new List<int>();
+        skills = new SkillManager();
+        coroutinenum = 100;
+        start = false;
+    }
 }

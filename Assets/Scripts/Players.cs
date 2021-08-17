@@ -421,7 +421,6 @@ public class Player
                 }
             }
         }
-        Debug.Log("research complete");
         players.gameinfo.skills.TriggerSkills(building.unit, EVENT.FINISH_RESEARCH, reinfo);
     }
     public void CancelResearch(int id)
@@ -596,6 +595,23 @@ public class Players : MonoBehaviour
             players[i] = new Player();
             players[i].Init(gameinfo, i);
         }
+    }
+    public void GameOver()
+    {
+        foreach (Projection projection in projections) Destroy(projection.gameObject);
+        foreach(List<Unit> line in units)
+        {
+            foreach(Unit unit in line)
+            {
+                if (unit.type == Unit.Type.SOLDIER) Destroy(unit.soldier.gameObject);
+            }
+        }
+        foreach(Player player in players)
+        {
+            player.units.Clear();
+        }
+        projections = new List<Projection>();
+        skillunit = new SortedDictionary<string, List<Unit>>();
     }
     // ∑µªÿ ‰º“
     public int Move()

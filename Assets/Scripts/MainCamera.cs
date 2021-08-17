@@ -29,6 +29,12 @@ public class MainCamera : MonoBehaviour
         active = true;
     }
 
+    public void GameOver()
+    {
+        active = false;
+        transform.position = new Vector3(right, height, 0);
+    }
+
     // Update is called once per frame
     void Update()
     {

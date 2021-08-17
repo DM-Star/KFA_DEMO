@@ -103,6 +103,25 @@ public class InfoBar : MonoBehaviour
         clicked = new Queue<ClickMsg>();
         statuses = new Queue<StatusMsg>();
         opbarpre = new GameObject[2];
+        avatar = GameObject.Find("Background/BuildingAvatar").GetComponent<Image>();
+
+        btnconfirm = GameObject.Find("InfoBar/Background/OperationBar/BtnConfirm");
+        btnconfirm.GetComponent<Button>().onClick.AddListener(Confirm);
+
+        btncancel = GameObject.Find("InfoBar/Background/OperationBar/BtnCancel");
+        btncancel.GetComponent<Button>().onClick.AddListener(Cancel);
+
+        operationbar = GameObject.Find("InfoBar/Background/OperationBar");
+
+        opbarname = GameObject.Find("InfoBar/Background/OperationBar/Name");
+        opbardesc = GameObject.Find("InfoBar/Background/OperationBar/Desc");
+        opbarneed = GameObject.Find("InfoBar/Background/OperationBar/Need");
+
+        opbarpre[0] = GameObject.Find("InfoBar/Background/OperationBar/Need1");
+        opbarpre[1] = GameObject.Find("InfoBar/Background/OperationBar/Need2");
+
+        progressbar = GameObject.Find("InfoBar/Background/ProgressBar");
+        resourcebar = GameObject.Find("InfoBar/Background/ResourceBar");
     }
     // Update is called once per frame
     void Update()
@@ -458,7 +477,7 @@ public class InfoBar : MonoBehaviour
                                 operationbar.SetActive(false);
                             }
                         }
-                        else
+                        else if(curbtn.grid.right != -1)
                         {
                             buid = gameinfo.players.GetBuilding(curbtn.grid).id;
                             // 可能影响当前格子的前驱
@@ -1647,25 +1666,7 @@ public class InfoBar : MonoBehaviour
     }
     public void Init()
     {
-        avatar = GameObject.Find("Background/BuildingAvatar").GetComponent<Image>();
-
-        btnconfirm = GameObject.Find("InfoBar/Background/OperationBar/BtnConfirm");
-        btnconfirm.GetComponent<Button>().onClick.AddListener(Confirm);
-
-        btncancel = GameObject.Find("InfoBar/Background/OperationBar/BtnCancel");
-        btncancel.GetComponent<Button>().onClick.AddListener(Cancel);
-
-        operationbar = GameObject.Find("InfoBar/Background/OperationBar");
-
-        opbarname = GameObject.Find("InfoBar/Background/OperationBar/Name");
-        opbardesc = GameObject.Find("InfoBar/Background/OperationBar/Desc");
-        opbarneed = GameObject.Find("InfoBar/Background/OperationBar/Need");
-
-        opbarpre[0] = GameObject.Find("InfoBar/Background/OperationBar/Need1");
-        opbarpre[1] = GameObject.Find("InfoBar/Background/OperationBar/Need2");
-
-        progressbar = GameObject.Find("InfoBar/Background/ProgressBar");
-        resourcebar = GameObject.Find("InfoBar/Background/ResourceBar");
+        
 
         if(gameinfo.client == 1)
         {
@@ -1692,5 +1693,31 @@ public class InfoBar : MonoBehaviour
     private void Log(string msg)
     {
         canvas.ShowMsg(msg);
+    }
+    public void GameOver()
+    {
+        foreach(KeyValuePair<int, BtnBuilding> pair in btnsoldiermap)
+        {
+            Destroy(pair.Value.gameObject);
+        }
+        foreach (KeyValuePair<int, BtnBuilding> pair in btnresearchmap)
+        {
+            Destroy(pair.Value.gameObject);
+        }
+        foreach(List<BtnBuilding> buildings in btnbuildings.Values)
+        {
+            foreach (BtnBuilding building in buildings) Destroy(building.gameObject);
+        }
+        foreach(BtnBuildingType bty in btnbuildingtypes)
+        {
+            Destroy(bty.gameObject);
+        }
+        curbtn = new BtnStatus();
+        clicked = new Queue<ClickMsg>();
+        statuses = new Queue<StatusMsg>();
+        btnbuildingtype.gameObject.SetActive(true);
+        btnbuilding.gameObject.SetActive(true);
+        btnresearch.gameObject.SetActive(true);
+        btnsoldier.gameObject.SetActive(true);
     }
 }

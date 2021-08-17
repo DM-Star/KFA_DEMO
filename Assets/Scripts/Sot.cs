@@ -26,6 +26,9 @@ public class Sot : MonoBehaviour
     private float starttime;
     private float time;
     private AI ai;
+    public GameObject ConfirmDialog;
+    public Button btnconfirm;
+    public Text congratuation;
     private char Int2Char(int i)
     {
         return (char)('A' + i);
@@ -66,7 +69,22 @@ public class Sot : MonoBehaviour
         btnhost.onClick.AddListener(host);
         btncon.onClick.AddListener(connect);
         btnoff.onClick.AddListener(offline);
+        btnconfirm.onClick.AddListener(back);
         framerate = 0.02f;
+    }
+
+    private void back()
+    {
+        gameinfo.GameOver();
+        ConfirmDialog.SetActive(false);
+        canvas.gameObject.SetActive(true);
+        firststart = false;
+        online = false;
+        start = false;
+        frame = 0;
+        flock = -1;
+        sigmap = new SortedDictionary<int, string>();
+        sigmap.Add(0, "");
     }
 
     // Update is called once per frame
@@ -88,13 +106,20 @@ public class Sot : MonoBehaviour
                 int loser = gameinfo.players.Move();
                 if(loser != -1)
                 {
+                    
+                    ConfirmDialog.SetActive(true);
                     if(loser == client)
                     {
-                        Debug.Log("ƒ„ ‰¡À");
+                        congratuation.text = "Ã´≤“¡À£¨ƒ„ ‰¡À";
                     }
                     else
                     {
-                        Debug.Log("ƒ„”Æ¡À");
+                        congratuation.text = "πßœ≤ƒ„£¨ƒ„”Æ¡À";
+                    }
+                    if (online)
+                    {
+                        if (client == 0) seversot.Dispose();
+                        opposot.Dispose();
                     }
                     start = false;
                 }

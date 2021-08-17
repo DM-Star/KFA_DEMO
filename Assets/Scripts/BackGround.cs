@@ -135,7 +135,13 @@ public class BackGround : MonoBehaviour
 
     }
 
-
+    public void GameOver()
+    {
+        gridclicked = new Queue<Position>();
+        curgrid = new Position(-1, -1, -1);
+        foreach (Building building in buildings) Destroy(building.gameObject);
+        foreach (Mist mist in mists) Destroy(mist.gameObject);
+    }
     private float MistPosx2X(int x)
     {
         return xmist + x * mistsize + mistsize / 2;
