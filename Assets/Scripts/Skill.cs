@@ -202,7 +202,7 @@ public class SkillManager
                         int distancey = Math.Abs(friend.col - weixiuzhan.col);
                         if ((distancex | distancey) == 1)
                         {
-                            Heal heal = new Heal(self, friend.unit, 50);
+                            Heal heal = new Heal(self, friend.unit, 10);
                             HpChange hpchange = friend.unit.RestoreHp(heal);
                             if (hpchange.before != hpchange.later)
                             {

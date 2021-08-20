@@ -578,6 +578,20 @@ public class InfoBar : MonoBehaviour
                                         ShowBuildingInfo(gameinfo.buildingmap[buid]);
                                     }
                                 }
+                                else
+                                {
+                                    buid = curbtn.building;
+                                    // 当前位置不存在建筑，但是玩家点击了建筑按钮
+                                    if (buid != 0)
+                                    {
+                                        ShowBuildingInfo(gameinfo.buildingmap[buid]);
+                                    }
+                                }
+                            }
+
+                            if ((building.foodpoint || building.ironpoint) && curbtn.grid.right == gameinfo.client)
+                            {
+                                resourcebar.SetActive(true);
                             }
 
                             btnresearchmap[msg.id].UpdateReProgressText();
@@ -1182,7 +1196,7 @@ public class InfoBar : MonoBehaviour
     private void initbtnbuilding()
     {
         btnbuildingtypes = new List<BtnBuildingType>(5);
-        string[] typestring = {"核心", "资源", "军团", "功能", "研发" };
+        string[] typestring = {"核心", "资源", "兵营", "防御", "科技" };
         Transform father = GameObject.Find("Background").transform;
         for (int i = 0; i < 5; i++)
         {
