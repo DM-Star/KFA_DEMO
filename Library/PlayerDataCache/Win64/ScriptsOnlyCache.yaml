@@ -5,13 +5,16 @@ ScriptsOnlyBuild:
     - Bar
     - BtnBuilding
     - BtnBuildingType
+    - Building
     - Cvs
     - FoodIronbar
     - GameInfo
+    - HpChangeTip
     - InfoBar
     - MainCamera
-    - MapGrid
+    - Mist
     - Players
+    - Projection
     - Soldier
     - Sot
     - Tip
@@ -54,60 +57,72 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 21
       Script: {instanceID: 0}
+    - Class: 23
+      Script: {instanceID: 0}
     - Class: 28
       Script: {instanceID: 0}
     - Class: 48
+      Script: {instanceID: 0}
+    - Class: 50
       Script: {instanceID: 0}
     - Class: 61
       Script: {instanceID: 0}
     - Class: 81
       Script: {instanceID: 0}
+    - Class: 102
+      Script: {instanceID: 0}
     - Class: 104
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1456}
+      Script: {instanceID: 1580}
     - Class: 114
-      Script: {instanceID: 2140}
+      Script: {instanceID: 1864}
     - Class: 114
-      Script: {instanceID: 2200}
+      Script: {instanceID: 2266}
     - Class: 114
-      Script: {instanceID: 2520}
+      Script: {instanceID: 2326}
     - Class: 114
-      Script: {instanceID: 2586}
+      Script: {instanceID: 2646}
     - Class: 114
-      Script: {instanceID: 2618}
+      Script: {instanceID: 2742}
     - Class: 114
-      Script: {instanceID: 2638}
+      Script: {instanceID: 2762}
     - Class: 114
-      Script: {instanceID: 2780}
+      Script: {instanceID: 2904}
     - Class: 114
-      Script: {instanceID: 2876}
+      Script: {instanceID: 2908}
     - Class: 114
-      Script: {instanceID: 2998}
+      Script: {instanceID: 3002}
     - Class: 114
-      Script: {instanceID: 3054}
+      Script: {instanceID: 3124}
     - Class: 114
-      Script: {instanceID: 3240}
+      Script: {instanceID: 3180}
     - Class: 114
-      Script: {instanceID: 3350}
+      Script: {instanceID: 3366}
     - Class: 114
-      Script: {instanceID: 3354}
+      Script: {instanceID: 3478}
     - Class: 114
-      Script: {instanceID: 3560}
+      Script: {instanceID: 3482}
     - Class: 114
-      Script: {instanceID: 3878}
+      Script: {instanceID: 3688}
     - Class: 114
-      Script: {instanceID: 3974}
+      Script: {instanceID: 4006}
     - Class: 114
-      Script: {instanceID: 4448}
+      Script: {instanceID: 4102}
     - Class: 114
-      Script: {instanceID: 4898}
+      Script: {instanceID: 4446}
     - Class: 114
-      Script: {instanceID: 4940}
+      Script: {instanceID: 4580}
     - Class: 114
-      Script: {instanceID: 5062}
+      Script: {instanceID: 5032}
     - Class: 114
-      Script: {instanceID: 5076}
+      Script: {instanceID: 5074}
+    - Class: 114
+      Script: {instanceID: 5196}
+    - Class: 114
+      Script: {instanceID: 5210}
+    - Class: 114
+      Script: {instanceID: 5422}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -125,6 +140,8 @@ ScriptsOnlyBuild:
     - Class: 223
       Script: {instanceID: 0}
     - Class: 224
+      Script: {instanceID: 0}
+    - Class: 225
       Script: {instanceID: 0}
   scriptHashData:
   - hash:
@@ -207,6 +224,12 @@ ScriptsOnlyBuild:
     className: Shadow
   - hash:
       serializedVersion: 2
+      Hash: e9ba1747108da659a757ad27465acae4
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: HpChangeTip
+  - hash:
+      serializedVersion: 2
       Hash: 300fd99066f8c288e85f5e81ce65fe34
     assemblyName: Unity.TextMeshPro.dll
     namespaceName: TMPro
@@ -219,7 +242,7 @@ ScriptsOnlyBuild:
     className: GroupTrack
   - hash:
       serializedVersion: 2
-      Hash: 8396b8685247c726c4d6df0701e7b0f5
+      Hash: 20635fabd3bd1549d7d87a123518a168
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Soldier
@@ -267,19 +290,13 @@ ScriptsOnlyBuild:
     className: FoodIronbar
   - hash:
       serializedVersion: 2
-      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: MapGrid
-  - hash:
-      serializedVersion: 2
       Hash: a1aa98c78061c6f03a8c124cda576e67
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
     className: CanvasScaler
   - hash:
       serializedVersion: 2
-      Hash: f8322d5883551b3c10d8fac66f167faa
+      Hash: 0dc4e21f54494b4fbf846ae3d871d03e
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: BtnBuilding
@@ -295,6 +312,12 @@ ScriptsOnlyBuild:
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.EventSystems
     className: EventSystem
+  - hash:
+      serializedVersion: 2
+      Hash: 8c61919aaee214ba205a32e4478bcbce
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: Projection
   - hash:
       serializedVersion: 2
       Hash: fe64a45214940b510a0ec79c96d43498
@@ -321,7 +344,7 @@ ScriptsOnlyBuild:
     className: TextMeshProUGUI
   - hash:
       serializedVersion: 2
-      Hash: b0dbc4a3b1b3696e108ca2bb580126f5
+      Hash: 491bb93d7dbf6252065bf74db179e0d5
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Sot
@@ -405,7 +428,7 @@ ScriptsOnlyBuild:
     className: ToggleGroup
   - hash:
       serializedVersion: 2
-      Hash: 1305808b391d898e4e88a78acf00594e
+      Hash: be5d768c8eec01800c9332bbdcb089ae
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: InfoBar
@@ -561,6 +584,12 @@ ScriptsOnlyBuild:
     className: SignalTrack
   - hash:
       serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: Mist
+  - hash:
+      serializedVersion: 2
       Hash: aba7b2852ef61d175dd9602e7723d5e5
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
@@ -645,7 +674,7 @@ ScriptsOnlyBuild:
     className: SpriteLibraryAsset
   - hash:
       serializedVersion: 2
-      Hash: 52dff9d93082248a49e70dce612cabd1
+      Hash: d6476a088e135b98e13912ed031cd74f
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: BackGround
@@ -663,13 +692,13 @@ ScriptsOnlyBuild:
     className: TMP_SubMeshUI
   - hash:
       serializedVersion: 2
-      Hash: b1e781568f9f4817ee262872275e464c
+      Hash: 706705334ee428e37d277325010669ce
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Players
   - hash:
       serializedVersion: 2
-      Hash: 789498d347a0fbae1cbf8cbd2c4a3a43
+      Hash: 94da83965c0082d88313e9f53e5a9028
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GameInfo
@@ -691,6 +720,12 @@ ScriptsOnlyBuild:
     assemblyName: Unity.TextMeshPro.dll
     namespaceName: TMPro
     className: TMP_ScrollbarEventHandler
+  - hash:
+      serializedVersion: 2
+      Hash: 9cf9d4172fa942beef1e4326510afec2
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: Building
   - hash:
       serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
@@ -730,4 +765,4 @@ ScriptsOnlyBuild:
   platform: 19
   scenePathNames:
   - Assets/Scenes/Battle.unity
-  playerPath: E:/Desktop/KFA_DEMO/kongfu.exe
+  playerPath: "E:/Desktop/KFA_DEMO/\u529F\u592B\u519B\u56E2.exe"
